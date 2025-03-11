@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tip Of The Thumb Mini Golf - Mobile Scorecard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8f0;
+        }
+        h1 {
+            color: #2e8b57;
+            text-align: center;
+        }
+        .section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .player-total {
+            font-weight: bold;
+            background-color: #e6ffe6;
+        }
+        .hidden {
+            display: none;
+        }
+        .current-hole {
+            background-color: #bef7be;
+        }
+        .final-scores {
+            font-size: 1.2em;
+        }
+        .winner {
+            color: #ff6600;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 2em;
+            padding: 4px;
+            margin: 2px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tip Of The Thumb Mini Golf</h1>
+    <!-- Step 1: Number of players -->
+    <div id="playerCountSection" class="section">
+        <h2>Step 1: How many players?</h2>
+        <input type="number" id="playerCount" min="1" max="10" value="4">
+        <button onclick="setPlayerCount()">Next</button>
+    </div>
+    
+    <!-- Scorecard table -->
+    <div id="scorecardSection" class="section hidden">
+        <div id="scorecardContainer">
+            <div id="scorecardFrontSection">
+                <table id="scorecardFront">
+                    <thead>
+                        <tr id="holeRowFront">
+                            <th>Player</th>
+                            <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
+                            <th>Front</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scoreBodyFront">
+                        <!-- Player rows for front 9 will be dynamically generated -->
+                    </tbody>
+                </table>
+                <button onclick="showBackSection()">Next &rarr;</button>
+            </div>
+            <div id="scorecardBackSection" class="hidden">
+                <button onclick="showFrontSection()">&larr; Previous</button>
+                <table id="scorecardBack">
+                    <thead>
+                        <tr id="holeRowBack">
+                            <th>Player</th>
+                            <th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th>
+                            <th>Back</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scoreBodyBack">
+                        <!-- Player rows for back 9 will be dynamically generated -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Step 4: Final scores -->
+    <div id="finalScoreSection" class="section hidden">
+        <h2>Step 4: Final Scores</h2>
+        <div id="finalScoresContainer" class="final-scores"></div>
+        <button onclick="resetGame()">Play Again</button>
+    </div>
+    
+    <div id="scorePopup" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 1px solid #ddd; padding: 30px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 300px; z-index: 1000;">
+        <div id="popupHeader" style="text-align: center; margin-bottom: 20px; font-weight: bold;"></div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            <div class="golf-ball" onclick="selectScore(1)" style="background-color: #ff9999; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer;">1</div>
+            <div class="golf-ball" onclick="selectScore(2)" style="background-color: #ffcc99; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer;">2</div>
+            <div class="golf-ball" onclick="selectScore(3)" style="background-color: #ffff99; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer;">3</div>
+            <div class="golf-ball" onclick="selectScore(4)" style="background-color: #ccff99; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer;">4</div>
+            <div class="golf-ball" onclick="selectScore(5)" style="background-color: #99ff99; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer;">5</div>
+            <div class="golf-ball" onclick="selectScore(6)" style="background-color: #99ccff; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer;">6</div>
+        </div>
+    </div>
+    
+    <script>
+        // Game state variables
+        let players = [];
+        let scores = [];
+        let currentHole = 1;
+        let totalHoles = 18;
+        
+        // Array of fun names
+        const funNames = ["Ace", "Birdie", "Eagle", "Putter", "Caddy", "Chip", "Divot", "Fairway", "Mulligan", "Bogey"];
+        
+        // Step 1: Set player count
+        function setPlayerCount() {
+            const count = parseInt(document.getElementById('playerCount').value);
+            if (isNaN(count) || count < 1 || count > 10) {
+                alert("Please enter a valid number between 1 and 10");
+                return;
+            }
+            
+            // Initialize player arrays
+            players = Array(count).fill('').map((_, i) => funNames[i % funNames.length]);
+            scores = Array(count).fill().map(() => Array(totalHoles).fill(null));
+            
+            // Set up scorecard table
+            setupScorecard();
+            
+            // Show the scorecard section
+            document.getElementById('playerCountSection').classList.add('hidden');
+            document.getElementById('scorecardSection').classList.remove('hidden');
+            document.getElementById('scorePopup').style.display = 'none'; // Ensure popup is hidden during Step 1
+            document.getElementById('scorePopup').classList.add('hidden'); // Hide popup during Step 1
+        }
+        
+        // Set up scorecard table
+        function setupScorecard() {
+            const scoreBodyFront = document.getElementById('scoreBodyFront');
+            const scoreBodyBack = document.getElementById('scoreBodyBack');
+            scoreBodyFront.innerHTML = '';
+            scoreBodyBack.innerHTML = '';
+            
+            for (let i = 0; i < players.length; i++) {
+                let rowHtmlFront = `<tr id="player${i}rowFront"><td><span onclick="editPlayerName(${i})">${players[i]}</span></td>`;
+                let rowHtmlBack = `<tr id="player${i}rowBack"><td><span onclick="editPlayerName(${i})">${players[i]}</span></td>`;
+                
+                for (let j = 0; j < 9; j++) {
+                    scores[i][j] = scores[i][j] !== null ? scores[i][j] : 0; // Initialize scores to 0
+                    rowHtmlFront += `<td><span onclick="editScore(${i}, ${j})">${scores[i][j]}</span></td>`;
+                    console.log(`Front score for player ${i}, hole ${j}: ${scores[i][j]}`); // Debug log
+                }
+                rowHtmlFront += `<td id="front_${i}" class="player-total">0</td></tr>`;
+                scoreBodyFront.innerHTML += rowHtmlFront;
+                
+                for (let j = 9; j < totalHoles; j++) {
+                    scores[i][j] = scores[i][j] !== null ? scores[i][j] : 0; // Initialize scores to 0
+                    rowHtmlBack += `<td><span onclick="editScore(${i}, ${j})">${scores[i][j]}</span></td>`;
+                    console.log(`Back score for player ${i}, hole ${j}: ${scores[i][j]}`); // Debug log
+                    if (j === 17) {
+                        rowHtmlBack += `<td id="back_${i}" class="player-total">0</td>`;
+                    }
+                }
+                rowHtmlBack += `<td id="total_${i}" class="player-total">0</td></tr>`;
+                scoreBodyBack.innerHTML += rowHtmlBack;
+            }
+        }
+        
+        // Edit player name
+        function editPlayerName(index) {
+            const playerCellFront = document.querySelector(`#player${index}rowFront td span`);
+            const playerCellBack = document.querySelector(`#player${index}rowBack td span`);
+            const inputFront = document.createElement('input');
+            const inputBack = document.createElement('input');
+            inputFront.type = 'text';
+            inputBack.type = 'text';
+            inputFront.value = players[index];
+            inputBack.value = players[index];
+            inputFront.onblur = function() {
+                players[index] = inputFront.value || players[index];
+                setupScorecard();
+            };
+            inputBack.onblur = function() {
+                players[index] = inputBack.value || players[index];
+                setupScorecard();
+            };
+            inputFront.onfocus = function() {
+                inputFront.select();
+            };
+            inputBack.onfocus = function() {
+                inputBack.select();
+            };
+            playerCellFront.replaceWith(inputFront);
+            playerCellBack.replaceWith(inputBack);
+            inputFront.focus();
+        }
+        
+        let currentPlayerIndex = null;
+        let currentHoleIndex = null;
+
+        function editScore(playerIndex, holeIndex) {
+            console.log(`editScore called for playerIndex: ${playerIndex}, holeIndex: ${holeIndex}`);
+            currentPlayerIndex = playerIndex;
+            currentHoleIndex = holeIndex;
+            const playerName = players[playerIndex];
+            const holeNumber = holeIndex + 1;
+            document.getElementById('popupHeader').textContent = `Player: ${playerName}, Hole: ${holeNumber}`;
+            const popup = document.getElementById('scorePopup');
+            console.log('Popup should now be visible');
+            popup.style.display = 'block';
+            popup.style.top = '50%';
+            popup.style.left = '50%';
+            popup.style.transform = 'translate(-50%, -50%)';
+            popup.classList.remove('hidden');
+            console.log('Popup styles:', popup.style);
+        }
+
+        function selectScore(score) {
+            scores[currentPlayerIndex][currentHoleIndex] = score;
+            updateScores(currentPlayerIndex);
+            setupScorecard();
+            document.getElementById('scorePopup').classList.add('hidden');
+            console.log(`Score updated for playerIndex: ${currentPlayerIndex}, holeIndex: ${currentHoleIndex}, score: ${score}`);
+        }
+
+        // Update scores and totals
+        function updateScores(playerIndex) {
+            let front = 0;
+            let back = 0;
+            let total = 0;
+            for (let j = 0; j < totalHoles; j++) {
+                const score = scores[playerIndex][j];
+                total += score;
+                if (j < 9) {
+                    front += score;
+                } else {
+                    back += score;
+                }
+            }
+            document.getElementById(`front_${playerIndex}`).textContent = front;
+            document.getElementById(`back_${playerIndex}`).textContent = back;
+            document.getElementById(`total_${playerIndex}`).textContent = total;
+            console.log(`Updated scores for player ${playerIndex}: Front = ${front}, Back = ${back}, Total = ${total}`);
+        }
+        
+        // Reset the game
+        function resetGame() {
+            currentHole = 1;
+            document.getElementById('finalScoreSection').classList.add('hidden');
+            document.getElementById('scorecardSection').classList.add('hidden');
+            document.getElementById('playerCountSection').classList.remove('hidden');
+        }
+
+        function showBackSection() {
+            document.getElementById('scorecardFrontSection').classList.add('hidden');
+            document.getElementById('scorecardBackSection').classList.remove('hidden');
+        }
+
+        function showFrontSection() {
+            document.getElementById('scorecardBackSection').classList.add('hidden');
+            document.getElementById('scorecardFrontSection').classList.remove('hidden');
+        }
+
+        function revertToText(playerIndex, holeIndex) {
+            const scoreCellFront = document.querySelector(`#player${playerIndex}rowFront td:nth-child(${holeIndex + 2})`);
+            const scoreCellBack = document.querySelector(`#player${playerIndex}rowBack td:nth-child(${holeIndex - 7})`);
+            scoreCellFront.innerHTML = `<span onclick="editScore(${playerIndex}, ${holeIndex})">${scores[playerIndex][holeIndex] !== null ? scores[playerIndex][holeIndex] : '?'}</span>`;
+            scoreCellBack.innerHTML = `<span onclick="editScore(${playerIndex}, ${holeIndex})">${scores[playerIndex][holeIndex] !== null ? scores[playerIndex][holeIndex] : '?'}</span>`;
+        }
+
+        document.addEventListener('click', function(event) {
+            const popup = document.getElementById('scorePopup');
+            if (!popup.contains(event.target) && !popup.classList.contains('hidden')) {
+                popup.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html> 
