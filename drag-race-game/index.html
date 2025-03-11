@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drag Race Challenge</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1>DRAG RACE</h1>
+    
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen active">
+      <h2>Select Your Car</h2>
+      
+      <div class="car-selection">
+        <div class="car-option selected" onclick="selectCar('muscle')">
+          <h3>MUSCLE</h3>
+          <div class="car-preview muscle-preview">
+            <i class="fas fa-car"></i>
+          </div>
+          <p>Power: High<br>Speed: Medium<br>Shift Zone: Wide</p>
+        </div>
+        
+        <div class="car-option" onclick="selectCar('sport')">
+          <h3>SPORT</h3>
+          <div class="car-preview sport-preview">
+            <i class="fas fa-car-side"></i>
+          </div>
+          <p>Power: Medium<br>Speed: High<br>Shift Zone: Medium</p>
+        </div>
+        
+        <div class="car-option" onclick="selectCar('exotic')">
+          <h3>EXOTIC</h3>
+          <div class="car-preview exotic-preview">
+            <i class="fas fa-car-rear"></i>
+          </div>
+          <p>Power: Very High<br>Speed: Highest<br>Shift Zone: Narrow</p>
+        </div>
+      </div>
+      
+      <div class="instructions">
+        <p>Shift when the RPM indicator reaches the target zone for best acceleration!</p>
+        <p><strong>Easy wins guaranteed in first 3 levels</strong></p>
+        <p class="controls-hint">Use SPACE BAR or click SHIFT button to change gears</p>
+      </div>
+      
+      <button onclick="startGame()" class="start-button">START RACE</button>
+    </div>
+    
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+      <div id="message"></div>
+      
+      <div id="track">
+        <div class="crowd top-crowd"></div>
+        <div class="crowd bottom-crowd"></div>
+        <div id="player-car" class="car">
+          <div id="player-label" class="car-label">YOU</div>
+        </div>
+        <div id="cpu-car" class="car">
+          <div id="cpu-label" class="car-label">CPU</div>
+        </div>
+        <div class="finish-line"></div>
+      </div>
+      
+      <div class="game-controls">
+        <div class="stats">
+          <div class="stat-box">Gear: <span id="gear-display">N</span></div>
+          <div class="stat-box">Speed: <span id="speed-display">0</span> MPH</div>
+          <div class="stat-box">Level: <span id="level-display">1</span></div>
+          <div class="stat-box">Score: <span id="score-display">0</span></div>
+        </div>
+        
+        <div class="meter-container">
+          <div id="rpm-meter">
+            <div id="rpm-background"></div>
+            <div id="shift-target"></div>
+            <div id="rpm-indicator"></div>
+          </div>
+        </div>
+        
+        <div>
+          <button id="shift-button" onclick="shiftGear()">SHIFT</button>
+        </div>
+      </div>
+      
+      <button onclick="showStartScreen()" class="restart-button">RESTART</button>
+    </div>
+    
+    <!-- End Screen -->
+    <div id="end-screen" class="screen">
+      <h2>RACE COMPLETE</h2>
+      <div id="result-message">You Win!</div>
+      <div id="final-score">Score: 0</div>
+      <button onclick="showStartScreen()" class="play-again-button">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <script src="assets/js/game-config.js"></script>
+  <script src="assets/js/game.js"></script>
+</body>
+</html> 
