@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Scooter Jump 3D</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="ui-container">
+        <div id="score">Score: 0</div>
+        <div id="start-screen">
+            <h1>Scooter Jump</h1>
+            <p>Jump over obstacles and collect coins!</p>
+            <p>Press SPACE or tap JUMP to play</p>
+            <button id="start-button">Start Game</button>
+        </div>
+        <div id="game-over">
+            <h1>Game Over!</h1>
+            <p id="final-score">Score: 0</p>
+            <button id="restart-button">Play Again</button>
+        </div>
+        <div class="mobile-controls">
+            <div id="jump-button">JUMP</div>
+        </div>
+    </div>
+
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.156.1/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.156.1/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="game.js"></script>
+</body>
+</html> 
