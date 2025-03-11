@@ -3,32 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Graveyard Explorer</title>
+    <title>Coding Club Games</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div id="info">
-        <h1>Graveyard Explorer</h1>
-        <p>Use WASD to move, Mouse to look around</p>
-    </div>
-    
-    <div id="pauseMenu">
-        <h2>Game Paused</h2>
-        <p>Controls:</p>
-        <p>WASD - Move</p>
-        <p>Mouse - Look around</p>
-        <p>Left Click - Attack</p>
-        <p>Q - Switch weapon</p>
-        <p>ESC - Pause/Unpause</p>
-        <p>Press ESC to resume</p>
+    <div class="hero">
+        <h1>Coding Club Games</h1>
+        <p class="subtitle">Explore our collection of student-created games</p>
     </div>
 
-    <div id="startOverlay">
-        <p>Click anywhere to start</p>
+    <div class="games-container">
+        <a href="graveyard-game/index.html" class="game-card">
+            <div class="game-image graveyard-bg">
+                <div class="game-overlay">
+                    <i class="fas fa-ghost"></i>
+                </div>
+            </div>
+            <div class="game-info">
+                <h2>Graveyard Explorer</h2>
+                <p>Navigate through a spooky graveyard in this first-person adventure</p>
+                <div class="game-tags">
+                    <span class="tag">3D</span>
+                    <span class="tag">Action</span>
+                    <span class="tag">Horror</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Template for future games -->
+        <div class="game-card coming-soon">
+            <div class="game-image">
+                <div class="game-overlay">
+                    <i class="fas fa-plus"></i>
+                </div>
+            </div>
+            <div class="game-info">
+                <h2>More Coming Soon</h2>
+                <p>Stay tuned for new exciting games!</p>
+            </div>
+        </div>
     </div>
 
-    <script src="game.js"></script>
+    <footer>
+        <p>Created with ❤️ by NH Coding Club 2025</p>
+    </footer>
 </body>
 </html> 
