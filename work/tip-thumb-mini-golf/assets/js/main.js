@@ -49,8 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const bookingButtons = document.querySelectorAll('.book-now-btn, .pricing-btn');
     bookingButtons.forEach(button => {
         button.addEventListener('click', () => {
-            // Add your booking logic here
-            alert('Booking system coming soon!');
+            // If it's the mobile scorecard button, let it work normally
+            if (button.getAttribute('href') === 'mobile-scorecard.html') {
+                return;
+            }
+            // For other booking buttons, do nothing for now
+            // Future implementation will handle actual booking functionality
         });
     });
 
