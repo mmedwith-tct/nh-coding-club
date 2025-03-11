@@ -1,36 +1,26 @@
-# Beach Shell Collector Game
+# Graveyard Explorer Game
 
-A 3D game where you collect shells on a beach, built with Three.js.
+A 3D browser-based game built with Three.js where players explore a spooky graveyard and battle enemies.
 
-## Setup Instructions
+## Features
+- First-person perspective
+- Multiple enemy types (Ghosts, Zombies, Skeletons)
+- Weapon switching (Sword and Bow)
+- Dynamic lighting and fog effects
+- Pause menu and controls display
 
-1. Install Node.js:
-   - Go to https://nodejs.org/
-   - Download and install the LTS (Long Term Support) version
-   - Restart your computer after installation
+## Controls
+- WASD - Move
+- Mouse - Look around
+- Left Click - Attack
+- Q - Switch weapon
+- ESC - Pause/Unpause
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+## Setup
+1. Clone the repository
+2. Open `index.html` in a modern web browser
+3. Click anywhere to start the game
 
-3. Start the server:
-   ```bash
-   npm start
-   ```
-
-4. Open your web browser and go to:
-   ```
-   http://localhost
-   ```
-
-## Game Controls
-- WASD or Arrow keys to move
-- Mouse to look around
-- Space to jump
-- Click to start the game
-
-## Troubleshooting
-If you get a permission error when trying to use port 80, you can:
-1. Run the command prompt as administrator, or
-2. Use a different port by modifying the start script in package.json to use port 8080 or 3000 
+## Dependencies
+- Three.js (r128)
+- Modern web browser with WebGL support 
