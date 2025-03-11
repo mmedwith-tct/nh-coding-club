@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tip Of The Thumb Mini Golf - Mobile Scorecard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -83,6 +84,15 @@
             border-radius: 4px;
             text-align: center;
         }
+        .nav-arrow {
+            cursor: pointer;
+            padding: 5px;
+            color: white;
+            transition: transform 0.2s;
+        }
+        .nav-arrow:hover {
+            transform: scale(1.2);
+        }
     </style>
 </head>
 <body>
@@ -103,22 +113,26 @@
                         <tr id="holeRowFront">
                             <th>Player</th>
                             <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
-                            <th>Front</th>
+                            <th style="position: relative;">Front
+                                <i class="fas fa-chevron-circle-right nav-arrow" onclick="showBackSection()" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 18px;"></i>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="scoreBodyFront">
                         <!-- Player rows for front 9 will be dynamically generated -->
                     </tbody>
                 </table>
-                <button onclick="showBackSection()">Next &rarr;</button>
             </div>
             <div id="scorecardBackSection" class="hidden">
-                <button onclick="showFrontSection()">&larr; Previous</button>
                 <table id="scorecardBack">
                     <thead>
                         <tr id="holeRowBack">
                             <th>Player</th>
-                            <th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th>
+                            <th style="position: relative; padding-left: 30px;">
+                                <i class="fas fa-chevron-circle-left nav-arrow" onclick="showFrontSection()" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 18px;"></i>
+                                10
+                            </th>
+                            <th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th>
                             <th>Back</th>
                             <th>Total</th>
                         </tr>
@@ -138,7 +152,7 @@
         <button onclick="resetGame()">Play Again</button>
     </div>
     
-    <div id="scorePopup" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 1px solid #ddd; padding: 30px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 300px; z-index: 1000;">
+    <div id="scorePopup" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 1px solid #ddd; padding: 30px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 300px; z-index: 1000; display: none; visibility: hidden;" class="hidden">
         <div id="popupHeader" style="text-align: center; margin-bottom: 20px; font-weight: bold;"></div>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
             <div class="golf-ball" onclick="selectScore(1)" style="background-color: #ff9999; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer;">1</div>
@@ -175,11 +189,13 @@
             // Set up scorecard table
             setupScorecard();
             
-            // Show the scorecard section
+            // Show the scorecard section and ensure popup is hidden
             document.getElementById('playerCountSection').classList.add('hidden');
             document.getElementById('scorecardSection').classList.remove('hidden');
-            document.getElementById('scorePopup').style.display = 'none'; // Ensure popup is hidden during Step 1
-            document.getElementById('scorePopup').classList.add('hidden'); // Hide popup during Step 1
+            const popup = document.getElementById('scorePopup');
+            popup.style.display = 'none';
+            popup.style.visibility = 'hidden';
+            popup.classList.add('hidden');
         }
         
         // Set up scorecard table
@@ -193,23 +209,27 @@
                 let rowHtmlFront = `<tr id="player${i}rowFront"><td><span onclick="editPlayerName(${i})">${players[i]}</span></td>`;
                 let rowHtmlBack = `<tr id="player${i}rowBack"><td><span onclick="editPlayerName(${i})">${players[i]}</span></td>`;
                 
+                // Calculate front 9 total while building the row
+                let frontTotal = 0;
                 for (let j = 0; j < 9; j++) {
-                    scores[i][j] = scores[i][j] !== null ? scores[i][j] : 0; // Initialize scores to 0
+                    scores[i][j] = scores[i][j] !== null ? scores[i][j] : 0;
+                    frontTotal += scores[i][j];
                     rowHtmlFront += `<td><span onclick="editScore(${i}, ${j})">${scores[i][j]}</span></td>`;
-                    console.log(`Front score for player ${i}, hole ${j}: ${scores[i][j]}`); // Debug log
                 }
-                rowHtmlFront += `<td id="front_${i}" class="player-total">0</td></tr>`;
+                rowHtmlFront += `<td id="front_${i}" class="player-total">${frontTotal}</td></tr>`;
                 scoreBodyFront.innerHTML += rowHtmlFront;
                 
+                // Calculate back 9 total while building the row
+                let backTotal = 0;
                 for (let j = 9; j < totalHoles; j++) {
-                    scores[i][j] = scores[i][j] !== null ? scores[i][j] : 0; // Initialize scores to 0
+                    scores[i][j] = scores[i][j] !== null ? scores[i][j] : 0;
+                    backTotal += scores[i][j];
                     rowHtmlBack += `<td><span onclick="editScore(${i}, ${j})">${scores[i][j]}</span></td>`;
-                    console.log(`Back score for player ${i}, hole ${j}: ${scores[i][j]}`); // Debug log
                     if (j === 17) {
-                        rowHtmlBack += `<td id="back_${i}" class="player-total">0</td>`;
+                        rowHtmlBack += `<td id="back_${i}" class="player-total">${backTotal}</td>`;
                     }
                 }
-                rowHtmlBack += `<td id="total_${i}" class="player-total">0</td></tr>`;
+                rowHtmlBack += `<td id="total_${i}" class="player-total">${frontTotal + backTotal}</td></tr>`;
                 scoreBodyBack.innerHTML += rowHtmlBack;
             }
         }
@@ -247,48 +267,72 @@
         let currentHoleIndex = null;
 
         function editScore(playerIndex, holeIndex) {
-            console.log(`editScore called for playerIndex: ${playerIndex}, holeIndex: ${holeIndex}`);
             currentPlayerIndex = playerIndex;
             currentHoleIndex = holeIndex;
             const playerName = players[playerIndex];
             const holeNumber = holeIndex + 1;
             document.getElementById('popupHeader').textContent = `Player: ${playerName}, Hole: ${holeNumber}`;
             const popup = document.getElementById('scorePopup');
-            console.log('Popup should now be visible');
             popup.style.display = 'block';
+            popup.style.visibility = 'visible';
             popup.style.top = '50%';
             popup.style.left = '50%';
             popup.style.transform = 'translate(-50%, -50%)';
             popup.classList.remove('hidden');
-            console.log('Popup styles:', popup.style);
+            event.stopPropagation(); // Prevent the click from bubbling up
         }
 
         function selectScore(score) {
+            if (currentPlayerIndex === null || currentHoleIndex === null) return;
+            
+            // Update the score in the scores array
             scores[currentPlayerIndex][currentHoleIndex] = score;
+            
+            // Update all totals for this player
             updateScores(currentPlayerIndex);
+            
+            // Update the display
             setupScorecard();
-            document.getElementById('scorePopup').classList.add('hidden');
-            console.log(`Score updated for playerIndex: ${currentPlayerIndex}, holeIndex: ${currentHoleIndex}, score: ${score}`);
+            
+            // Hide the popup
+            const popup = document.getElementById('scorePopup');
+            if (popup) {
+                popup.style.display = 'none';
+                popup.style.visibility = 'hidden';
+                popup.classList.add('hidden');
+            }
+
+            // Reset current indices
+            currentPlayerIndex = null;
+            currentHoleIndex = null;
         }
 
         // Update scores and totals
         function updateScores(playerIndex) {
             let front = 0;
             let back = 0;
-            let total = 0;
-            for (let j = 0; j < totalHoles; j++) {
-                const score = scores[playerIndex][j];
-                total += score;
-                if (j < 9) {
-                    front += score;
-                } else {
-                    back += score;
-                }
+            
+            // Calculate front 9
+            for (let j = 0; j < 9; j++) {
+                front += (scores[playerIndex][j] || 0);
             }
-            document.getElementById(`front_${playerIndex}`).textContent = front;
-            document.getElementById(`back_${playerIndex}`).textContent = back;
-            document.getElementById(`total_${playerIndex}`).textContent = total;
-            console.log(`Updated scores for player ${playerIndex}: Front = ${front}, Back = ${back}, Total = ${total}`);
+            
+            // Calculate back 9
+            for (let j = 9; j < 18; j++) {
+                back += (scores[playerIndex][j] || 0);
+            }
+            
+            // Calculate total
+            const total = front + back;
+            
+            // Update the display
+            const frontElement = document.getElementById(`front_${playerIndex}`);
+            const backElement = document.getElementById(`back_${playerIndex}`);
+            const totalElement = document.getElementById(`total_${playerIndex}`);
+            
+            if (frontElement) frontElement.textContent = front;
+            if (backElement) backElement.textContent = back;
+            if (totalElement) totalElement.textContent = total;
         }
         
         // Reset the game
@@ -316,9 +360,15 @@
             scoreCellBack.innerHTML = `<span onclick="editScore(${playerIndex}, ${holeIndex})">${scores[playerIndex][holeIndex] !== null ? scores[playerIndex][holeIndex] : '?'}</span>`;
         }
 
+        // Update the click event listener to properly handle popup closing
         document.addEventListener('click', function(event) {
             const popup = document.getElementById('scorePopup');
-            if (!popup.contains(event.target) && !popup.classList.contains('hidden')) {
+            const scoreCell = event.target.closest('td span[onclick^="editScore"]');
+            
+            // Don't close if clicking a score cell or inside the popup
+            if (!scoreCell && !popup.contains(event.target)) {
+                popup.style.display = 'none';
+                popup.style.visibility = 'hidden';
                 popup.classList.add('hidden');
             }
         });
