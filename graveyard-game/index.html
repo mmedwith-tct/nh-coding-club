@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graveyard Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div id="info">
+        <h1>Graveyard Explorer</h1>
+        <p>Use WASD to move, Mouse to look around</p>
+    </div>
+    
+    <div id="pauseMenu">
+        <h2>Game Paused</h2>
+        <p>Controls:</p>
+        <p>WASD - Move</p>
+        <p>Mouse - Look around</p>
+        <p>Left Click - Attack</p>
+        <p>Q - Switch weapon</p>
+        <p>ESC - Pause/Unpause</p>
+        <p>Press ESC to resume</p>
+    </div>
+
+    <div id="startOverlay">
+        <p>Click anywhere to start</p>
+    </div>
+
+    <div id="errorOverlay" style="display: none;">
+        <p>Unable to start game. Please check if your browser supports WebGL.</p>
+    </div>
+
+    <script>
+        // Check for WebGL support before loading game
+        function checkWebGL() {
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (!gl) {
+                    document.getElementById('errorOverlay').style.display = 'block';
+                    return false;
+                }
+                return true;
+            } catch (e) {
+                document.getElementById('errorOverlay').style.display = 'block';
+                return false;
+            }
+        }
+
+        // Only load game.js if WebGL is supported
+        if (checkWebGL()) {
+            const script = document.createElement('script');
+            script.src = 'game.js';
+            script.onerror = function() {
+                document.getElementById('errorOverlay').style.display = 'block';
+            };
+            document.body.appendChild(script);
+        }
+    </script>
+</body>
+</html> 
