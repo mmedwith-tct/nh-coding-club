@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coding Club Games</title>
+    <title>Coding Club Projects</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="hero">
-        <h1>Coding Club Games</h1>
-        <p class="subtitle">Explore our collection of student-created games</p>
+        <h1>Coding Club Projects</h1>
+        <p class="subtitle">Explore our collection of student-created projects</p>
+        <div class="toggle-container">
+            <button class="toggle-btn active" data-section="games">Games</button>
+            <button class="toggle-btn" data-section="work">Work</button>
+        </div>
     </div>
 
-    <div class="games-container">
-        <a href="graveyard-game/index.html" class="game-card">
+    <div class="games-container section-active" id="games-section">
+        <a href="games/graveyard-game/index.html" class="game-card">
             <div class="game-image graveyard-bg">
                 <div class="game-overlay">
                     <i class="fas fa-ghost"></i>
@@ -31,7 +35,7 @@
             </div>
         </a>
 
-        <a href="scooter-jump/index.html" class="game-card">
+        <a href="games/scooter-jump/index.html" class="game-card">
             <div class="game-image scooter-bg">
                 <div class="game-overlay">
                     <i class="fas fa-person-skating"></i>
@@ -48,7 +52,7 @@
             </div>
         </a>
 
-        <a href="cube-monster-park-hunt/index.html" class="game-card">
+        <a href="games/cube-monster-park-hunt/index.html" class="game-card">
             <div class="game-image cube-monster-bg">
                 <div class="game-overlay">
                     <i class="fas fa-cube"></i>
@@ -65,7 +69,7 @@
             </div>
         </a>
 
-        <a href="drag-race-game/index.html" class="game-card">
+        <a href="games/drag-race-game/index.html" class="game-card">
             <div class="game-image drag-race-bg">
                 <div class="game-overlay">
                     <i class="fas fa-car-side"></i>
@@ -96,8 +100,77 @@
         </div>
     </div>
 
+    <div class="work-container section-hidden" id="work-section">
+        <a href="work/tip-thumb-mini-golf/index.html" class="work-card">
+            <div class="work-image tip-thumb-bg">
+                <div class="work-overlay">
+                    <i class="fas fa-golf-ball"></i>
+                </div>
+            </div>
+            <div class="work-info">
+                <h2>Tip Thumb Mini Golf</h2>
+                <p>A modern mini golf experience with online booking and score tracking</p>
+                <div class="work-tags">
+                    <span class="tag">TypeScript</span>
+                    <span class="tag">React</span>
+                    <span class="tag">Business</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Template for future work -->
+        <div class="work-card coming-soon">
+            <div class="work-image">
+                <div class="work-overlay">
+                    <i class="fas fa-plus"></i>
+                </div>
+            </div>
+            <div class="work-info">
+                <h2>More Coming Soon</h2>
+                <p>Stay tuned for new exciting projects!</p>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <p>Created with ❤️ by NH Coding Club 2025</p>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtns = document.querySelectorAll('.toggle-btn');
+            const sections = {
+                games: document.getElementById('games-section'),
+                work: document.getElementById('work-section')
+            };
+
+            // Initialize sections
+            Object.values(sections).forEach(s => {
+                s.classList.add('section-hidden');
+                s.classList.remove('section-active');
+            });
+            sections.games.classList.remove('section-hidden');
+            sections.games.classList.add('section-active');
+
+            toggleBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const section = btn.dataset.section;
+                    
+                    // Update buttons
+                    toggleBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Update sections
+                    Object.values(sections).forEach(s => {
+                        s.classList.add('section-hidden');
+                        s.classList.remove('section-active');
+                    });
+                    
+                    sections[section].classList.remove('section-hidden');
+                    sections[section].classList.add('section-active');
+                });
+            });
+        });
+    </script>
 </body>
 </html> 
