@@ -111,8 +111,8 @@
                 <h2>Tip Thumb Mini Golf</h2>
                 <p>A modern mini golf experience with online booking and score tracking</p>
                 <div class="work-tags">
-                    <span class="tag">TypeScript</span>
-                    <span class="tag">React</span>
+                    <span class="tag">HTML</span>
+                    <span class="tag">Javascript</span>
                     <span class="tag">Business</span>
                 </div>
             </div>
@@ -155,6 +155,7 @@
             toggleBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const section = btn.dataset.section;
+                    console.log(`Toggling section: ${section}`);  // Log the section being toggled
                     
                     // Update buttons
                     toggleBtns.forEach(b => b.classList.remove('active'));
@@ -168,6 +169,7 @@
                     
                     sections[section].classList.remove('section-hidden');
                     sections[section].classList.add('section-active');
+                    console.log(`Section ${section} is now active`);  // Log the active section
                 });
             });
         });
