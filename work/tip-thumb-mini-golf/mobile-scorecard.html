@@ -6,6 +6,9 @@
     <title>Tip Of The Thumb Mini Golf - Mobile Scorecard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!-- Google AdSense Script - Replace client ID with your actual AdSense ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_PUBLISHER_ID"
+     crossorigin="anonymous"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,26 +21,35 @@
             color: #2e8b57;
             text-align: center;
         }
+        h2 {
+            margin: 0;
+            margin-bottom: 2px;
+            color: #2e8b57;
+            font-size: 1.2em;
+        }
         .section {
             background-color: white;
             border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 8px;
+            margin-bottom: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 2px;
+            border-spacing: 0;
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 4px;
             text-align: center;
+            font-size: 0.9em;
         }
         th {
             background-color: #4CAF50;
             color: white;
+            padding: 6px 4px;
         }
         tr:nth-child(even) {
             background-color: #f2f2f2;
@@ -163,13 +175,23 @@
             cursor: pointer;
             color: #666;
         }
+        .ad-section {
+            margin-top: 20px;
+            min-height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            border-radius: 10px;
+            padding: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
-    <h1>Tip Of The Thumb Mini Golf</h1>
     <!-- Step 1: Number of players -->
     <div id="playerCountSection" class="section">
-        <h2>Step 1: How many players?</h2>
+        <h2>How many players?</h2>
         <input type="number" id="playerCount" min="1" max="10" value="4">
         <button onclick="setPlayerCount()">Next</button>
     </div>
@@ -254,6 +276,20 @@
                 <i class="fas fa-images"></i> Save to Photos
             </button>
         </div>
+    </div>
+
+    <!-- AdSense Section -->
+    <div class="ad-section">
+        <!-- Horizontal Ad Unit -->
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
+             data-ad-slot="YOUR_AD_SLOT_ID"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
     </div>
 
     <script>
