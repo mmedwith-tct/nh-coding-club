@@ -98,7 +98,7 @@
         <div class="hud-item">ENERGY: <span id="energy" class="hud-value">100</span></div>
       </div>
       <div class="hud-row">
-        <div class="hud-item">VICTIMS: <span id="score" class="hud-value">0</span>/<span id="requiredVictims" class="hud-value">5</span></div>
+        <div class="hud-item">VICTIMS: <span id="score" class="hud-value">0</span>/<span id="requiredVictims" class="hud-value">15</span></div>
         <div class="hud-item">TOTAL: <span id="totalScore" class="hud-value">0</span></div>
       </div>
       <div id="speedBoost" class="hud-row" style="display: none;">
@@ -2411,6 +2411,10 @@
       
       // Set background color
       document.body.style.backgroundColor = config.background;
+      
+      // Update HUD with level configuration
+      document.getElementById('levelName').textContent = config.name;
+      document.getElementById('requiredVictims').textContent = config.requiredVictims;
       
       // Spawn trees
       spawnTrees(config.treeCount);
