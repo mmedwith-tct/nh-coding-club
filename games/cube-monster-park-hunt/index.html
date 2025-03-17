@@ -111,7 +111,7 @@
       <p>VICTIMS CONSUMED: <span id="finalScore">0</span></p>
       <button class="restart" onclick="restartGame()">HUNT AGAIN</button>
     </div>
-    <div class="version">v1.0.2</div>
+    <div class="version">v1.0.3</div>
   </div>
   
   <script src="levels.js"></script>
@@ -301,85 +301,48 @@
     }
     
     // Create victims
-    function spawnVictims() {
-      if (victims.length < 10 && Math.random() < 0.02) {
-        const newVictim = {
-          x: Math.random() * mapWidth,
-          y: Math.random() * mapHeight,
-          size: 24,
-          speed: 1 + Math.random() * 0.5,
+    function spawnVictims(count) {
+      for (let i = 0; i < count; i++) {
+        let x, y;
+        let validPosition = false;
+        
+        while (!validPosition) {
+          x = Math.random() * (canvas.width - 30);
+          y = Math.random() * (canvas.height - 30);
+          validPosition = true;
+          
+          // Check collision with trees
+          for (const tree of trees) {
+            if (collision(x, y, 30, 30, tree.x, tree.y, tree.size, tree.size)) {
+              validPosition = false;
+              break;
+            }
+          }
+          
+          // Check collision with ponds
+          for (const pond of ponds) {
+            if (collision(x, y, 30, 30, pond.x, pond.y, pond.size, pond.size)) {
+              validPosition = false;
+              break;
+            }
+          }
+        }
+        
+        victims.push({
+          x: x,
+          y: y,
+          size: 30,
+          speed: 1,
           direction: Math.random() * Math.PI * 2,
           directionChangeTime: 0,
-          state: 'wandering', // wandering, fleeing
+          state: 'wandering',
           sprites: {
             frameCount: 0,
             frameDelay: 10,
             currentFrame: 0,
             totalFrames: 2
           }
-        };
-        
-        // Make sure victims don't spawn on trees or ponds or other victims
-        let validPosition = false;
-        let attempts = 0;
-        const maxAttempts = 50; // Prevent infinite loops
-        
-        while (!validPosition && attempts < maxAttempts) {
-          validPosition = true;
-          attempts++;
-          
-          // Check tree collisions
-          for (const tree of trees) {
-            if (collision(
-              newVictim.x, newVictim.y, newVictim.size, newVictim.size,
-              tree.x, tree.y, tree.width, tree.height
-            )) {
-              validPosition = false;
-              break;
-            }
-          }
-          
-          // Check pond collisions
-          if (validPosition) {
-            const corners = [
-              { x: newVictim.x, y: newVictim.y },
-              { x: newVictim.x + newVictim.size, y: newVictim.y },
-              { x: newVictim.x, y: newVictim.y + newVictim.size },
-              { x: newVictim.x + newVictim.size, y: newVictim.y + newVictim.size }
-            ];
-            
-            for (const corner of corners) {
-              if (isInPond(corner.x, corner.y)) {
-                validPosition = false;
-                break;
-              }
-            }
-          }
-          
-          // Check other victims collisions
-          if (validPosition) {
-            for (const victim of victims) {
-              if (collision(
-                newVictim.x, newVictim.y, newVictim.size, newVictim.size,
-                victim.x, victim.y, victim.size, victim.size
-              )) {
-                validPosition = false;
-                break;
-              }
-            }
-          }
-          
-          // If position is invalid, try a new random position
-          if (!validPosition) {
-            newVictim.x = Math.random() * mapWidth;
-            newVictim.y = Math.random() * mapHeight;
-          }
-        }
-        
-        // Only add the victim if we found a valid position
-        if (validPosition) {
-          victims.push(newVictim);
-        }
+        });
       }
     }
     
@@ -1121,8 +1084,10 @@
         }
       }
       
-      // Spawn new victims
-      spawnVictims();
+      // Spawn new victims less frequently
+      if (Math.random() < 0.01) {
+        spawnVictims(1);
+      }
       
       // Update particles
       updateParticles();
@@ -1341,7 +1306,7 @@
 
     // Add portal collision check
     function checkPortalCollision() {
-      if (!portal) return;
+      if (!portal || !levelComplete) return;
       
       const dx = player.x - portal.x;
       const dy = player.y - portal.y;
@@ -1354,13 +1319,17 @@
           totalScore += score;
           // Reset score for the new level
           score = 0;
+          scoreDisplay.textContent = '0';
           // Update current level
           currentLevel = nextLevel;
           // Initialize the new level
           initLevel(currentLevel);
+          // Update level name display
+          document.getElementById('levelName').textContent = getLevelConfig(currentLevel).name;
+          // Reset level complete flag
+          levelComplete = false;
         } else {
           // Game complete
-          totalScore += score;
           isGameOver = true;
           gameOverScreen.style.display = 'block';
           finalScoreDisplay.textContent = totalScore;
@@ -1487,7 +1456,6 @@
           size: enemyType.size,
           speed: enemyType.speed,
           type: enemyType.type,
-          direction: Math.random() * Math.PI * 2,
           state: 'chasing',
           sprites: {
             frameCount: 0,
@@ -1647,26 +1615,45 @@
         if (collision(
           player.x, player.y, player.size, player.size,
           enemy.x, enemy.y, enemy.size, enemy.size
-        ) && player.invulnerabilityTimer === 0) {
-          // Player takes damage
-          energy -= 20;
-          player.invulnerabilityTimer = 60; // 1 second of invulnerability
-          player.isFlickering = true;
-          
-          // Create particle effect for damage
-          for (let j = 0; j < 10; j++) {
-            particles.push({
-              x: player.x - cameraX + Math.random() * player.size,
-              y: player.y - cameraY + Math.random() * player.size,
-              size: 2 + Math.random() * 3,
-              speedY: -1 - Math.random() * 3,
-              life: 30 + Math.random() * 30
-            });
+        )) {
+          if (player.hasSpeedBoost) {
+            // Player can eat enemy with speed boost
+            // Create particle effect for eating enemy
+            for (let j = 0; j < 15; j++) {
+              particles.push({
+                x: enemy.x - cameraX + Math.random() * enemy.size,
+                y: enemy.y - cameraY + Math.random() * enemy.size,
+                size: 2 + Math.random() * 3,
+                speedY: -1 - Math.random() * 3,
+                life: 30 + Math.random() * 30
+              });
+            }
+            
+            // Remove enemy and increase score
+            enemies.splice(i, 1);
+            score++;
+            scoreDisplay.textContent = score;
+          } else if (player.invulnerabilityTimer === 0) {
+            // Player takes damage
+            energy -= 20;
+            player.invulnerabilityTimer = 60; // 1 second of invulnerability
+            player.isFlickering = true;
+            
+            // Create particle effect for damage
+            for (let j = 0; j < 10; j++) {
+              particles.push({
+                x: player.x - cameraX + Math.random() * player.size,
+                y: player.y - cameraY + Math.random() * player.size,
+                size: 2 + Math.random() * 3,
+                speedY: -1 - Math.random() * 3,
+                life: 30 + Math.random() * 30
+              });
+            }
+            
+            // Enemy flees after attacking
+            enemy.state = 'fleeing';
+            enemy.direction = Math.atan2(-dy, -dx);
           }
-          
-          // Enemy flees after attacking
-          enemy.state = 'fleeing';
-          enemy.direction = Math.atan2(-dy, -dx);
         }
         
         // Update animation frame
@@ -1680,17 +1667,17 @@
 
     // Add level initialization function
     function initLevel(levelName) {
-      const config = getLevelConfig(levelName);
-      
       // Reset game state
       trees = [];
       ponds = [];
       victims = [];
       enemies = [];
-      fish = []; // Reset fish array
-      particles = [];
+      fish = [];
       portal = null;
       levelComplete = false;
+      
+      // Get level configuration
+      const config = getLevelConfig(levelName);
       
       // Set background color
       document.body.style.backgroundColor = config.background;
@@ -1701,25 +1688,34 @@
       // Spawn ponds
       spawnPonds(config.pondCount, config.pondSize);
       
-      // Spawn initial victims
-      for (let i = 0; i < config.victimCount; i++) {
-        spawnVictims();
-      }
+      // Spawn victims
+      spawnVictims(config.victimCount);
       
-      // Spawn enemies
+      // Spawn enemies based on level configuration
       config.enemyTypes.forEach(enemyType => {
         for (let i = 0; i < enemyType.count; i++) {
-          spawnEnemy(enemyType);
+          enemies.push({
+            x: Math.random() * (canvas.width - enemyType.size),
+            y: Math.random() * (canvas.height - enemyType.size),
+            size: enemyType.size,
+            speed: enemyType.speed,
+            type: enemyType.type,
+            state: 'chasing',
+            direction: Math.random() * Math.PI * 2,
+            sprites: {
+              frameCount: 0,
+              frameDelay: 10,
+              currentFrame: 0,
+              totalFrames: 2
+            }
+          });
         }
       });
       
-      // Spawn initial fish
-      for (let i = 0; i < 5; i++) {
-        spawnFish();
-      }
-      
-      // Update HUD
-      updateHUD();
+      // Spawn fish in ponds
+      ponds.forEach(pond => {
+        spawnFish(pond);
+      });
     }
 
     // Game loop
@@ -1837,7 +1833,7 @@
     function initGame() {
       initTrees();
       initPonds();
-      spawnVictims();
+      spawnVictims(1);
       gameLoop();
     }
     
