@@ -26,12 +26,27 @@
     .hud {
       color: #fff;
       padding: 10px;
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
       display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background-color: rgba(0, 0, 0, 0.7);
+      border: 2px solid #ff0000;
+      margin-bottom: 10px;
+    }
+    .hud-row {
+      display: flex;
       justify-content: space-between;
+      align-items: center;
+    }
+    .hud-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .hud-value {
+      color: #ff0000;
+      font-weight: bold;
     }
     .title {
       color: #ff0000;
@@ -77,12 +92,20 @@
 <body>
   <h1 class="title">CUBE MONSTER PARK HUNT</h1>
   <div class="game-container">
-    <canvas id="gameCanvas" width="640" height="480"></canvas>
     <div class="hud">
-      <div>VICTIMS: <span id="score">0</span></div>
-      <div>ENERGY: <span id="energy">100</span></div>
-      <div id="speedBoost" style="display: none;">SPEED BOOST: <span id="boostTimer">0</span>s</div>
+      <div class="hud-row">
+        <div class="hud-item">LEVEL: <span id="levelName" class="hud-value">PARK</span></div>
+        <div class="hud-item">ENERGY: <span id="energy" class="hud-value">100</span></div>
+      </div>
+      <div class="hud-row">
+        <div class="hud-item">VICTIMS: <span id="score" class="hud-value">0</span>/<span id="requiredVictims" class="hud-value">5</span></div>
+        <div class="hud-item">TOTAL: <span id="totalScore" class="hud-value">0</span></div>
+      </div>
+      <div id="speedBoost" class="hud-row" style="display: none;">
+        <div class="hud-item">SPEED BOOST: <span id="boostTimer" class="hud-value">0</span>s</div>
+      </div>
     </div>
+    <canvas id="gameCanvas" width="640" height="480"></canvas>
     <div id="gameOver" class="game-over">
       <h2>GAME OVER</h2>
       <p>VICTIMS CONSUMED: <span id="finalScore">0</span></p>
@@ -153,6 +176,9 @@
     let currentLevel = "park";
     let portal = null;
     let levelComplete = false;
+    
+    // Add total score variable
+    let totalScore = 0;
     
     // Create ponds
     function initPonds() {
@@ -1139,7 +1165,7 @@
       spawnEnemies();
 
       // Check for level completion
-      if (!levelComplete && isLevelComplete(currentLevel, score)) {
+      if (!levelComplete && score >= getLevelConfig(currentLevel).requiredVictims) {
         levelComplete = true;
         // Spawn portal at random location in the game world
         let validPosition = false;
@@ -1187,12 +1213,13 @@
     function gameOver() {
       isGameOver = true;
       gameOverScreen.style.display = 'block';
-      finalScoreDisplay.textContent = score;
+      finalScoreDisplay.textContent = totalScore;
     }
     
     // Restart game
     function restartGame() {
       score = 0;
+      totalScore = 0;
       energy = 100;
       isGameOver = false;
       gameTime = 0;
@@ -1208,6 +1235,7 @@
       particles = [];
       scoreDisplay.textContent = '0';
       energyDisplay.textContent = '100';
+      document.getElementById('totalScore').textContent = '0';
       speedBoostDisplay.style.display = 'none';
       gameOverScreen.style.display = 'none';
       currentLevel = "park";
@@ -1235,14 +1263,6 @@
       if (portal) {
         drawPortalIndicator();
       }
-      
-      // Draw level name
-      ctx.fillStyle = "#000000";
-      ctx.font = "20px Arial";
-      ctx.fillText(getLevelConfig(currentLevel).name, 10, 30);
-      
-      // Draw level progress
-      ctx.fillText(`Victims: ${score}/${getLevelConfig(currentLevel).requiredVictims}`, 10, 60);
     }
     
     // Add portal direction indicator function
@@ -1330,13 +1350,20 @@
       if (distance < 40) {
         const nextLevel = getNextLevel(currentLevel);
         if (nextLevel) {
+          // Add current level score to total
+          totalScore += score;
+          // Reset score for the new level
+          score = 0;
+          // Update current level
           currentLevel = nextLevel;
+          // Initialize the new level
           initLevel(currentLevel);
         } else {
           // Game complete
+          totalScore += score;
           isGameOver = true;
           gameOverScreen.style.display = 'block';
-          finalScoreDisplay.textContent = score;
+          finalScoreDisplay.textContent = totalScore;
         }
       }
     }
