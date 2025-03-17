@@ -111,7 +111,7 @@
       <p>VICTIMS CONSUMED: <span id="finalScore">0</span></p>
       <button class="restart" onclick="restartGame()">HUNT AGAIN</button>
     </div>
-    <div class="version">v1.0.6</div>
+    <div class="version">v1.0.7</div>
   </div>
   
   <script src="levels.js"></script>
@@ -1500,7 +1500,42 @@
           const screenX = x - cameraX;
           const screenY = y - cameraY;
           
-          if (currentLevel === 'desert') {
+          if (currentLevel === 'lava') {
+            // Lava background with red tiles
+            if ((Math.floor(x / gridSize) + Math.floor(y / gridSize)) % 2 === 0) {
+              ctx.fillStyle = '#8B0000'; // Dark red
+            } else {
+              ctx.fillStyle = '#FF0000'; // Bright red
+            }
+            
+            // Add lava texture
+            for (let i = 0; i < 3; i++) {
+              const lavaX = screenX + Math.random() * gridSize;
+              const lavaY = screenY + Math.random() * gridSize;
+              const lavaSize = 1 + Math.random() * 2;
+              ctx.fillStyle = '#FF4500'; // Orange-red
+              ctx.fillRect(lavaX, lavaY, lavaSize, lavaSize);
+            }
+          } else if (currentLevel === 'sky') {
+            // Sky background with clouds
+            const noise = Math.sin(x / 100) * Math.cos(y / 100) * 0.5 + 0.5;
+            if (noise > 0.7) {
+              ctx.fillStyle = '#87CEEB'; // Light blue
+            } else if (noise > 0.4) {
+              ctx.fillStyle = '#00BFFF'; // Deep sky blue
+            } else {
+              ctx.fillStyle = '#1E90FF'; // Dodger blue
+            }
+            
+            // Add cloud texture
+            if (Math.random() > 0.9) {
+              const cloudX = screenX + Math.random() * gridSize;
+              const cloudY = screenY + Math.random() * gridSize;
+              const cloudSize = 2 + Math.random() * 3;
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(cloudX, cloudY, cloudSize, cloudSize);
+            }
+          } else if (currentLevel === 'desert') {
             // Desert sand pattern with dunes
             const noise = Math.sin(x / 100) * Math.cos(y / 100) * 0.5 + 0.5;
             if (noise > 0.7) {
@@ -1518,36 +1553,6 @@
               const grainSize = 1 + Math.random() * 2;
               ctx.fillStyle = noise > 0.7 ? '#E6B17A' : '#A0522D';
               ctx.fillRect(grainX, grainY, grainSize, grainSize);
-            }
-          } else if (currentLevel === 'moon') {
-            // Moon surface pattern
-            const noise = Math.sin(x / 100) * Math.cos(y / 100) * 0.5 + 0.5;
-            if (noise > 0.7) {
-              ctx.fillStyle = '#2F4F4F';
-            } else if (noise > 0.4) {
-              ctx.fillStyle = '#3F5F5F';
-            } else {
-              ctx.fillStyle = '#1F3F3F';
-            }
-            
-            // Add moon surface texture
-            for (let i = 0; i < 3; i++) {
-              const grainX = screenX + Math.random() * gridSize;
-              const grainY = screenY + Math.random() * gridSize;
-              const grainSize = 1 + Math.random() * 2;
-              ctx.fillStyle = noise > 0.7 ? '#4F6F6F' : '#2F4F4F';
-              ctx.fillRect(grainX, grainY, grainSize, grainSize);
-            }
-          } else if (currentLevel === 'sky') {
-            // Sky pattern
-            const noise = Math.sin(x / 100) * Math.cos(y / 100) * 0.5 + 0.5;
-            if (noise > 0.7) {
-              ctx.fillStyle = '#87CEEB';
-              const snowX = screenX + Math.random() * gridSize;
-              const snowY = screenY + Math.random() * gridSize;
-              const snowSize = 1 + Math.random() * 2;
-              ctx.fillStyle = '#FFFFFF';
-              ctx.fillRect(snowX, snowY, snowSize, snowSize);
             }
           } else {
             // Park grass pattern
@@ -2459,7 +2464,7 @@
         }
         
         // Handle keyboard input
-        if (keys.ArrowUp || keys.w) {
+        if (keys.ArrowUp || keys.w || keys.KeyW) {
           const newY = player.y - currentSpeed;
           let canMove = true;
           
@@ -2478,7 +2483,7 @@
             player.y = newY;
           }
         }
-        if (keys.ArrowDown || keys.s) {
+        if (keys.ArrowDown || keys.s || keys.KeyS) {
           const newY = player.y + currentSpeed;
           let canMove = true;
           
@@ -2497,7 +2502,7 @@
             player.y = newY;
           }
         }
-        if (keys.ArrowLeft || keys.a) {
+        if (keys.ArrowLeft || keys.a || keys.KeyA) {
           const newX = player.x - currentSpeed;
           let canMove = true;
           
@@ -2516,7 +2521,7 @@
             player.x = newX;
           }
         }
-        if (keys.ArrowRight || keys.d) {
+        if (keys.ArrowRight || keys.d || keys.KeyD) {
           const newX = player.x + currentSpeed;
           let canMove = true;
           
@@ -2547,11 +2552,56 @@
     const keys = {};
     
     window.addEventListener('keydown', (e) => {
-      keys[e.key] = true;
+      // Handle both key and code properties
+      if (e.key) keys[e.key] = true;
+      if (e.code) keys[e.code] = true;
+      
+      // Hidden 'P' key press to instantly spawn portal
+      if (e.key.toLowerCase() === 'p' && !levelComplete) {
+        levelComplete = true;
+        // Spawn portal at random location in the game world
+        let validPosition = false;
+        let attempts = 0;
+        while (!validPosition && attempts < 50) {
+          portal = {
+            x: Math.random() * (mapWidth - 60) + 30,
+            y: Math.random() * (mapHeight - 60) + 30
+          };
+          validPosition = true;
+          
+          // Check collision with trees
+          for (let tree of trees) {
+            const dx = portal.x - tree.x;
+            const dy = portal.y - tree.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < tree.width + 40) {
+              validPosition = false;
+              break;
+            }
+          }
+          
+          // Check collision with ponds
+          if (validPosition) {
+            for (let pond of ponds) {
+              const dx = portal.x - pond.x;
+              const dy = portal.y - pond.y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              if (distance < pond.width + 40) {
+                validPosition = false;
+                break;
+              }
+            }
+          }
+          
+          attempts++;
+        }
+      }
     });
     
     window.addEventListener('keyup', (e) => {
-      keys[e.key] = false;
+      // Handle both key and code properties
+      if (e.key) keys[e.key] = false;
+      if (e.code) keys[e.code] = false;
     });
     
     // Initialize game

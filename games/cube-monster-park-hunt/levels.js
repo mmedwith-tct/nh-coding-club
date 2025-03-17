@@ -6,8 +6,8 @@ const levelConfigs = {
         treeCount: 15,
         pondCount: 5,
         pondSize: 150,
-        victimCount: 5,
-        requiredVictims: 5,
+        victimCount: 15,
+        requiredVictims: 15,
         enemyTypes: [
             { type: 'wolf', count: 2, size: 32, speed: 2 },
             { type: 'raccoon', count: 3, size: 24, speed: 1.5 }
@@ -19,8 +19,8 @@ const levelConfigs = {
         treeCount: 8,
         pondCount: 3,
         pondSize: 150,
-        victimCount: 5,
-        requiredVictims: 5,
+        victimCount: 15,
+        requiredVictims: 15,
         enemyTypes: [
             { type: 'wolf', count: 3, size: 32, speed: 2.5 },
             { type: 'raccoon', count: 2, size: 24, speed: 2 }
@@ -32,24 +32,11 @@ const levelConfigs = {
         treeCount: 10,
         pondCount: 4,
         pondSize: 150,
-        victimCount: 5,
-        requiredVictims: 5,
+        victimCount: 15,
+        requiredVictims: 15,
         enemyTypes: [
             { type: 'wolf', count: 2, size: 32, speed: 2 },
             { type: 'raccoon', count: 3, size: 24, speed: 1.5 }
-        ]
-    },
-    sky: {
-        name: "SKY",
-        background: "#87CEEB",
-        treeCount: 12,
-        pondCount: 4,
-        pondSize: 150,
-        victimCount: 5,
-        requiredVictims: 5,
-        enemyTypes: [
-            { type: 'wolf', count: 3, size: 32, speed: 2.5 },
-            { type: 'raccoon', count: 2, size: 24, speed: 2 }
         ]
     },
     lava: {
@@ -58,8 +45,21 @@ const levelConfigs = {
         treeCount: 8,
         pondCount: 3,
         pondSize: 150,
-        victimCount: 5,
-        requiredVictims: 5,
+        victimCount: 15,
+        requiredVictims: 15,
+        enemyTypes: [
+            { type: 'wolf', count: 3, size: 32, speed: 2.5 },
+            { type: 'raccoon', count: 2, size: 24, speed: 2 }
+        ]
+    },
+    sky: {
+        name: "SKY",
+        background: "#87CEEB",
+        treeCount: 12,
+        pondCount: 4,
+        pondSize: 150,
+        victimCount: 15,
+        requiredVictims: 15,
         enemyTypes: [
             { type: 'wolf', count: 3, size: 32, speed: 2.5 },
             { type: 'raccoon', count: 2, size: 24, speed: 2 }
@@ -74,7 +74,7 @@ function getLevelConfig(levelName) {
 
 // Get the next level in sequence
 function getNextLevel(currentLevel) {
-    const levelOrder = ['park', 'desert', 'moon', 'sky', 'lava'];
+    const levelOrder = ['park', 'desert', 'moon', 'lava', 'sky'];
     const currentIndex = levelOrder.indexOf(currentLevel.toLowerCase());
     if (currentIndex === -1 || currentIndex === levelOrder.length - 1) {
         return null; // No next level
