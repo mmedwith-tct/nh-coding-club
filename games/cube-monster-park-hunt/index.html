@@ -74,6 +74,7 @@
     <div class="hud">
       <div>VICTIMS: <span id="score">0</span></div>
       <div>ENERGY: <span id="energy">100</span></div>
+      <div id="speedBoost" style="display: none;">SPEED BOOST: <span id="boostTimer">0</span>s</div>
     </div>
     <div id="gameOver" class="game-over">
       <h2>GAME OVER</h2>
@@ -90,6 +91,8 @@
     const energyDisplay = document.getElementById('energy');
     const gameOverScreen = document.getElementById('gameOver');
     const finalScoreDisplay = document.getElementById('finalScore');
+    const speedBoostDisplay = document.getElementById('speedBoost');
+    const boostTimerDisplay = document.getElementById('boostTimer');
     
     let score = 0;
     let energy = 100;
@@ -105,7 +108,10 @@
       isFlickering: false,
       flickerCount: 0,
       pulseSize: 0,
-      pulseDirection: 1
+      pulseDirection: 1,
+      isInPond: false,
+      hasSpeedBoost: false,
+      speedBoostTimer: 0
     };
     
     // Victims array
@@ -115,18 +121,53 @@
     let trees = [];
     
     // Game map
-    const mapWidth = 1280;
-    const mapHeight = 960;
+    const mapWidth = 1920;
+    const mapHeight = 1440;
     let cameraX = 0;
     let cameraY = 0;
     
     // Particle system for effects
     let particles = [];
     
+    // Ponds array
+    let ponds = [];
+    
+    // Fish array
+    let fish = [];
+    
+    // Create ponds
+    function initPonds() {
+      ponds = [];
+      for (let i = 0; i < 5; i++) {
+        ponds.push({
+          x: Math.random() * mapWidth,
+          y: Math.random() * mapHeight,
+          width: 100 + Math.random() * 100,
+          height: 100 + Math.random() * 100
+        });
+      }
+    }
+    
+    // Create fish
+    function spawnFish() {
+      if (fish.length < 20 && Math.random() < 0.02) {
+        const pond = ponds[Math.floor(Math.random() * ponds.length)];
+        const newFish = {
+          x: pond.x + Math.random() * pond.width,
+          y: pond.y + Math.random() * pond.height,
+          size: 16,
+          speed: 1 + Math.random() * 0.5,
+          direction: Math.random() * Math.PI * 2,
+          pondIndex: ponds.indexOf(pond)
+        };
+        fish.push(newFish);
+      }
+    }
+    
     // Create trees
     function initTrees() {
       trees = [];
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 15; i++) {
         trees.push({
           x: Math.random() * mapWidth,
           y: Math.random() * mapHeight,
@@ -205,7 +246,9 @@
           
           // Vary colors slightly for texture
           const colorVariation = Math.floor(Math.random() * 30) - 15;
-          ctx.fillStyle = `rgb(${255 + colorVariation}, ${0 + colorVariation}, ${0 + colorVariation})`;
+          ctx.fillStyle = player.hasSpeedBoost ? 
+            `rgb(${255 + colorVariation}, ${255 + colorVariation}, ${0 + colorVariation})` :
+            `rgb(${255 + colorVariation}, ${0 + colorVariation}, ${0 + colorVariation})`;
           
           ctx.fillRect(
             player.x - cameraX + x, 
@@ -217,7 +260,7 @@
       }
       
       // Pulsing glow effect
-      ctx.shadowColor = '#ff0000';
+      ctx.shadowColor = player.hasSpeedBoost ? '#ffff00' : '#ff0000';
       ctx.shadowBlur = 20;
       ctx.beginPath();
       ctx.rect(
@@ -226,7 +269,7 @@
         player.size + player.pulseSize, 
         player.size + player.pulseSize
       );
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+      ctx.fillStyle = player.hasSpeedBoost ? 'rgba(255, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
       ctx.fill();
       ctx.shadowBlur = 0;
     }
@@ -368,6 +411,97 @@
       });
     }
     
+    // Draw ponds and fish
+    function drawPonds() {
+      ponds.forEach(pond => {
+        // Check if pond is visible on screen
+        if (
+          pond.x + pond.width < cameraX ||
+          pond.x > cameraX + canvas.width ||
+          pond.y + pond.height < cameraY ||
+          pond.y > cameraY + canvas.height
+        ) {
+          return;
+        }
+        
+        // Draw pond water
+        ctx.fillStyle = '#0066cc';
+        ctx.fillRect(
+          pond.x - cameraX,
+          pond.y - cameraY,
+          pond.width,
+          pond.height
+        );
+        
+        // Draw pond edge
+        ctx.fillStyle = '#003366';
+        ctx.fillRect(
+          pond.x - cameraX,
+          pond.y - cameraY,
+          pond.width,
+          4
+        );
+        ctx.fillRect(
+          pond.x - cameraX,
+          pond.y - cameraY,
+          4,
+          pond.height
+        );
+        ctx.fillRect(
+          pond.x - cameraX + pond.width - 4,
+          pond.y - cameraY,
+          4,
+          pond.height
+        );
+        ctx.fillRect(
+          pond.x - cameraX,
+          pond.y - cameraY + pond.height - 4,
+          pond.width,
+          4
+        );
+      });
+      
+      // Draw fish
+      fish.forEach(fish => {
+        // Check if fish is visible on screen
+        if (
+          fish.x + fish.size < cameraX ||
+          fish.x > cameraX + canvas.width ||
+          fish.y + fish.size < cameraY ||
+          fish.y > cameraY + canvas.height
+        ) {
+          return;
+        }
+        
+        // Draw fish shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(
+          fish.x - cameraX + 2,
+          fish.y - cameraY + 2,
+          fish.size,
+          fish.size
+        );
+        
+        // Draw fish body
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(
+          fish.x - cameraX,
+          fish.y - cameraY,
+          fish.size,
+          fish.size
+        );
+        
+        // Draw fish tail
+        ctx.fillStyle = '#ff6600';
+        ctx.fillRect(
+          fish.x - cameraX + fish.size - 4,
+          fish.y - cameraY + 4,
+          8,
+          8
+        );
+      });
+    }
+    
     // Draw the park background
     function drawBackground() {
       // Grid pattern for grass
@@ -453,9 +587,49 @@
              y1 + h1 > y2;
     }
     
+    // Check if a point is inside a pond
+    function isInPond(x, y) {
+      for (const pond of ponds) {
+        if (x >= pond.x && x <= pond.x + pond.width &&
+            y >= pond.y && y <= pond.y + pond.height) {
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    // Check if player is in a pond
+    function checkPlayerInPond() {
+      const corners = [
+        { x: player.x, y: player.y },
+        { x: player.x + player.size, y: player.y },
+        { x: player.x, y: player.y + player.size },
+        { x: player.x + player.size, y: player.y + player.size }
+      ];
+      
+      for (const corner of corners) {
+        if (isInPond(corner.x, corner.y)) {
+          player.isInPond = true;
+          return;
+        }
+      }
+      player.isInPond = false;
+    }
+    
     // Update game state
     function update() {
       if (isGameOver) return;
+      
+      // Update speed boost timer
+      if (player.hasSpeedBoost) {
+        player.speedBoostTimer--;
+        speedBoostDisplay.style.display = 'block';
+        boostTimerDisplay.textContent = Math.ceil(player.speedBoostTimer / 60);
+        if (player.speedBoostTimer <= 0) {
+          player.hasSpeedBoost = false;
+          speedBoostDisplay.style.display = 'none';
+        }
+      }
       
       // Player pulse effect
       player.pulseSize += 0.2 * player.pulseDirection;
@@ -520,17 +694,36 @@
         const newX = victim.x + Math.cos(victim.direction) * victim.speed;
         const newY = victim.y + Math.sin(victim.direction) * victim.speed;
         
-        // Check for tree collisions
+        // Check for tree collisions and pond collisions
         let canMove = true;
+        
+        // Check tree collisions
         for (const tree of trees) {
           if (collision(
             newX, newY, victim.size, victim.size,
             tree.x, tree.y, tree.width, tree.height
           )) {
             canMove = false;
-            // Bounce off trees
             victim.direction += Math.PI + (Math.random() - 0.5) * Math.PI / 2;
             break;
+          }
+        }
+        
+        // Check pond collisions
+        if (canMove) {
+          const corners = [
+            { x: newX, y: newY },
+            { x: newX + victim.size, y: newY },
+            { x: newX, y: newY + victim.size },
+            { x: newX + victim.size, y: newY + victim.size }
+          ];
+          
+          for (const corner of corners) {
+            if (isInPond(corner.x, corner.y)) {
+              canMove = false;
+              victim.direction += Math.PI + (Math.random() - 0.5) * Math.PI / 2;
+              break;
+            }
           }
         }
         
@@ -585,6 +778,37 @@
       
       // Update particles
       updateParticles();
+      
+      // Update fish movement
+      updateFish();
+      
+      // Spawn new fish
+      spawnFish();
+
+      // Check for fish collisions
+      for (let i = fish.length - 1; i >= 0; i--) {
+        const currentFish = fish[i];
+        if (collision(
+          player.x, player.y, player.size, player.size,
+          currentFish.x, currentFish.y, currentFish.size, currentFish.size
+        )) {
+          // Create particle effect for eating fish
+          for (let j = 0; j < 15; j++) {
+            particles.push({
+              x: currentFish.x - cameraX + Math.random() * currentFish.size,
+              y: currentFish.y - cameraY + Math.random() * currentFish.size,
+              size: 2 + Math.random() * 3,
+              speedY: -1 - Math.random() * 3,
+              life: 60 + Math.random() * 60
+            });
+          }
+          
+          // Remove fish and activate speed boost
+          fish.splice(i, 1);
+          player.hasSpeedBoost = true;
+          player.speedBoostTimer = 600; // 10 seconds at 60fps
+        }
+      }
     }
     
     // Game over
@@ -602,10 +826,14 @@
       player.x = canvas.width / 2;
       player.y = canvas.height / 2;
       player.size = 32;
+      player.hasSpeedBoost = false;
+      player.speedBoostTimer = 0;
       victims = [];
+      fish = [];
       particles = [];
       scoreDisplay.textContent = '0';
       energyDisplay.textContent = '100';
+      speedBoostDisplay.style.display = 'none';
       gameOverScreen.style.display = 'none';
     }
     
@@ -617,6 +845,7 @@
       // Draw game elements
       drawBackground();
       drawTrees();
+      drawPonds();
       drawVictims();
       drawPlayer();
       drawParticles();
@@ -625,9 +854,21 @@
     // Game loop
     function gameLoop() {
       if (!isGameOver) {
+        // Check if player is in pond
+        checkPlayerInPond();
+        
+        // Calculate current player speed
+        let currentSpeed = player.speed;
+        if (player.isInPond) {
+          currentSpeed *= 0.5;
+        }
+        if (player.hasSpeedBoost) {
+          currentSpeed *= 1.5;
+        }
+        
         // Handle keyboard input
         if (keys.ArrowUp || keys.w) {
-          const newY = player.y - player.speed;
+          const newY = player.y - currentSpeed;
           let canMove = true;
           
           // Check for tree collisions
@@ -646,7 +887,7 @@
           }
         }
         if (keys.ArrowDown || keys.s) {
-          const newY = player.y + player.speed;
+          const newY = player.y + currentSpeed;
           let canMove = true;
           
           // Check for tree collisions
@@ -665,7 +906,7 @@
           }
         }
         if (keys.ArrowLeft || keys.a) {
-          const newX = player.x - player.speed;
+          const newX = player.x - currentSpeed;
           let canMove = true;
           
           // Check for tree collisions
@@ -684,7 +925,7 @@
           }
         }
         if (keys.ArrowRight || keys.d) {
-          const newX = player.x + player.speed;
+          const newX = player.x + currentSpeed;
           let canMove = true;
           
           // Check for tree collisions
@@ -722,16 +963,52 @@
     });
     
     // Initialize game
-    function init() {
+    function initGame() {
       initTrees();
+      initPonds();
+      spawnVictims();
       gameLoop();
     }
     
     // Start game
-    init();
+    initGame();
     
     // Make restart function globally available
     window.restartGame = restartGame;
+    
+    // Update fish movement
+    function updateFish() {
+      fish.forEach(fish => {
+        const pond = ponds[fish.pondIndex];
+        
+        // Move fish
+        fish.x += Math.cos(fish.direction) * fish.speed;
+        fish.y += Math.sin(fish.direction) * fish.speed;
+        
+        // Keep fish strictly within pond boundaries
+        if (fish.x < pond.x) {
+          fish.x = pond.x;
+          fish.direction = Math.PI - fish.direction;
+        }
+        if (fish.x > pond.x + pond.width - fish.size) {
+          fish.x = pond.x + pond.width - fish.size;
+          fish.direction = Math.PI - fish.direction;
+        }
+        if (fish.y < pond.y) {
+          fish.y = pond.y;
+          fish.direction = -fish.direction;
+        }
+        if (fish.y > pond.y + pond.height - fish.size) {
+          fish.y = pond.y + pond.height - fish.size;
+          fish.direction = -fish.direction;
+        }
+        
+        // Randomly change direction
+        if (Math.random() < 0.01) {
+          fish.direction += (Math.random() - 0.5) * Math.PI / 2;
+        }
+      });
+    }
   </script>
 </body>
 </html> 

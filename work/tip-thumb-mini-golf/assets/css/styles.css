@@ -409,7 +409,7 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .nav-links {
         display: none;
     }
@@ -433,6 +433,18 @@ body {
     .shop-image,
     .team-image {
         max-width: 100%;
+    }
+
+    .social-grid {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .facebook-feed, 
+    .instagram-feed {
+        width: 100%;
+        max-width: 500px;
+        margin-bottom: 2rem;
     }
 }
 
