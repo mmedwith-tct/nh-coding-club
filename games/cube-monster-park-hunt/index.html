@@ -97,6 +97,7 @@
     let score = 0;
     let energy = 100;
     let isGameOver = false;
+    let gameTime = 0; // Track game time for enemy speed scaling
     
     // Player cube
     const player = {
@@ -111,7 +112,8 @@
       pulseDirection: 1,
       isInPond: false,
       hasSpeedBoost: false,
-      speedBoostTimer: 0
+      speedBoostTimer: 0,
+      invulnerabilityTimer: 0 // Temporary invulnerability after taking damage
     };
     
     // Victims array
@@ -134,6 +136,9 @@
     
     // Fish array
     let fish = [];
+    
+    // Enemies array
+    let enemies = [];
     
     // Create ponds
     function initPonds() {
@@ -196,24 +201,139 @@
           }
         };
         
-        // Make sure victims don't spawn on trees
+        // Make sure victims don't spawn on trees or ponds or other victims
         let validPosition = false;
-        while (!validPosition) {
+        let attempts = 0;
+        const maxAttempts = 50; // Prevent infinite loops
+        
+        while (!validPosition && attempts < maxAttempts) {
           validPosition = true;
+          attempts++;
+          
+          // Check tree collisions
           for (const tree of trees) {
             if (collision(
               newVictim.x, newVictim.y, newVictim.size, newVictim.size,
               tree.x, tree.y, tree.width, tree.height
             )) {
-              newVictim.x = Math.random() * mapWidth;
-              newVictim.y = Math.random() * mapHeight;
               validPosition = false;
               break;
             }
           }
+          
+          // Check pond collisions
+          if (validPosition) {
+            const corners = [
+              { x: newVictim.x, y: newVictim.y },
+              { x: newVictim.x + newVictim.size, y: newVictim.y },
+              { x: newVictim.x, y: newVictim.y + newVictim.size },
+              { x: newVictim.x + newVictim.size, y: newVictim.y + newVictim.size }
+            ];
+            
+            for (const corner of corners) {
+              if (isInPond(corner.x, corner.y)) {
+                validPosition = false;
+                break;
+              }
+            }
+          }
+          
+          // Check other victims collisions
+          if (validPosition) {
+            for (const victim of victims) {
+              if (collision(
+                newVictim.x, newVictim.y, newVictim.size, newVictim.size,
+                victim.x, victim.y, victim.size, victim.size
+              )) {
+                validPosition = false;
+                break;
+              }
+            }
+          }
+          
+          // If position is invalid, try a new random position
+          if (!validPosition) {
+            newVictim.x = Math.random() * mapWidth;
+            newVictim.y = Math.random() * mapHeight;
+          }
         }
         
-        victims.push(newVictim);
+        // Only add the victim if we found a valid position
+        if (validPosition) {
+          victims.push(newVictim);
+        }
+      }
+    }
+    
+    // Create enemies
+    function spawnEnemies() {
+      if (enemies.length < 5 && Math.random() < 0.01) {
+        const enemyTypes = ['wolf', 'raccoon'];
+        const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+        const baseSpeed = type === 'wolf' ? 2 : 1.5;
+        
+        const newEnemy = {
+          x: Math.random() * mapWidth,
+          y: Math.random() * mapHeight,
+          size: type === 'wolf' ? 32 : 24,
+          speed: baseSpeed,
+          type: type,
+          direction: Math.random() * Math.PI * 2,
+          state: 'chasing', // chasing, fleeing
+          sprites: {
+            frameCount: 0,
+            frameDelay: 10,
+            currentFrame: 0,
+            totalFrames: 2
+          }
+        };
+        
+        // Make sure enemies don't spawn on trees, ponds, or other entities
+        let validPosition = false;
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        while (!validPosition && attempts < maxAttempts) {
+          validPosition = true;
+          attempts++;
+          
+          // Check tree collisions
+          for (const tree of trees) {
+            if (collision(
+              newEnemy.x, newEnemy.y, newEnemy.size, newEnemy.size,
+              tree.x, tree.y, tree.width, tree.height
+            )) {
+              validPosition = false;
+              break;
+            }
+          }
+          
+          // Check pond collisions
+          if (validPosition) {
+            const corners = [
+              { x: newEnemy.x, y: newEnemy.y },
+              { x: newEnemy.x + newEnemy.size, y: newEnemy.y },
+              { x: newEnemy.x, y: newEnemy.y + newEnemy.size },
+              { x: newEnemy.x + newEnemy.size, y: newEnemy.y + newEnemy.size }
+            ];
+            
+            for (const corner of corners) {
+              if (isInPond(corner.x, corner.y)) {
+                validPosition = false;
+                break;
+              }
+            }
+          }
+          
+          if (!validPosition) {
+            newEnemy.x = Math.random() * mapWidth;
+            newEnemy.y = Math.random() * mapHeight;
+          }
+        }
+        
+        if (validPosition) {
+          enemies.push(newEnemy);
+        }
       }
     }
     
@@ -502,6 +622,108 @@
       });
     }
     
+    // Draw enemies
+    function drawEnemies() {
+      enemies.forEach(enemy => {
+        // Draw shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(
+          enemy.x - cameraX + 2,
+          enemy.y - cameraY + 2,
+          enemy.size,
+          enemy.size
+        );
+        
+        const x = enemy.x - cameraX;
+        const y = enemy.y - cameraY;
+        const size = enemy.size;
+        const isWolf = enemy.type === 'wolf';
+        
+        // Calculate direction for body parts
+        const bodyAngle = enemy.direction;
+        const legOffset = Math.PI / 4; // 45 degrees for legs
+        
+        // Draw body (main rectangle)
+        ctx.save();
+        ctx.translate(x + size/2, y + size/2);
+        ctx.rotate(bodyAngle);
+        
+        // Body
+        ctx.fillStyle = isWolf ? '#666666' : '#8B4513';
+        ctx.fillRect(-size/2, -size/3, size, size/2);
+        
+        // Head
+        ctx.fillStyle = isWolf ? '#666666' : '#8B4513';
+        ctx.beginPath();
+        ctx.arc(size/2, -size/3, size/3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Ears
+        ctx.fillStyle = isWolf ? '#666666' : '#8B4513';
+        ctx.beginPath();
+        ctx.arc(size/2 + size/4, -size/2, size/6, 0, Math.PI * 2);
+        ctx.arc(size/2 + size/4, -size/3, size/6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Eyes
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(size/2 + size/4, -size/3, 2, 0, Math.PI * 2);
+        ctx.arc(size/2 + size/4, -size/4, 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Snout
+        ctx.fillStyle = isWolf ? '#666666' : '#8B4513';
+        ctx.beginPath();
+        ctx.arc(size/2 + size/3, -size/3, size/6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Legs
+        ctx.fillStyle = isWolf ? '#666666' : '#8B4513';
+        
+        // Front legs
+        ctx.save();
+        ctx.rotate(legOffset);
+        ctx.fillRect(-size/4, -size/3, size/4, size/2);
+        ctx.restore();
+        
+        ctx.save();
+        ctx.rotate(-legOffset);
+        ctx.fillRect(-size/4, -size/3, size/4, size/2);
+        ctx.restore();
+        
+        // Back legs
+        ctx.save();
+        ctx.rotate(legOffset + Math.PI/2);
+        ctx.fillRect(-size/4, -size/3, size/4, size/2);
+        ctx.restore();
+        
+        ctx.save();
+        ctx.rotate(-legOffset + Math.PI/2);
+        ctx.fillRect(-size/4, -size/3, size/4, size/2);
+        ctx.restore();
+        
+        // Tail
+        ctx.fillStyle = isWolf ? '#555555' : '#8B4513';
+        ctx.beginPath();
+        ctx.arc(-size/2, -size/3, size/4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+        
+        // Add some texture/detail
+        ctx.fillStyle = isWolf ? '#777777' : '#A0522D';
+        for (let i = 0; i < 3; i++) {
+          ctx.fillRect(
+            x + Math.random() * size,
+            y + Math.random() * size,
+            2,
+            2
+          );
+        }
+      });
+    }
+    
     // Draw the park background
     function drawBackground() {
       // Grid pattern for grass
@@ -619,6 +841,14 @@
     // Update game state
     function update() {
       if (isGameOver) return;
+      
+      // Update invulnerability timer
+      if (player.invulnerabilityTimer > 0) {
+        player.invulnerabilityTimer--;
+        if (player.invulnerabilityTimer === 0) {
+          player.isFlickering = false;
+        }
+      }
       
       // Update speed boost timer
       if (player.hasSpeedBoost) {
@@ -809,6 +1039,12 @@
           player.speedBoostTimer = 600; // 10 seconds at 60fps
         }
       }
+      
+      // Update enemies
+      updateEnemies();
+      
+      // Spawn new enemies
+      spawnEnemies();
     }
     
     // Game over
@@ -823,12 +1059,15 @@
       score = 0;
       energy = 100;
       isGameOver = false;
+      gameTime = 0;
       player.x = canvas.width / 2;
       player.y = canvas.height / 2;
       player.size = 32;
       player.hasSpeedBoost = false;
       player.speedBoostTimer = 0;
+      player.invulnerabilityTimer = 0;
       victims = [];
+      enemies = [];
       fish = [];
       particles = [];
       scoreDisplay.textContent = '0';
@@ -847,6 +1086,7 @@
       drawTrees();
       drawPonds();
       drawVictims();
+      drawEnemies();
       drawPlayer();
       drawParticles();
     }
@@ -1006,6 +1246,126 @@
         // Randomly change direction
         if (Math.random() < 0.01) {
           fish.direction += (Math.random() - 0.5) * Math.PI / 2;
+        }
+      });
+    }
+    
+    // Update enemies
+    function updateEnemies() {
+      gameTime++; // Increment game time for speed scaling
+        
+      enemies.forEach(enemy => {
+        // Calculate base speed with time scaling
+        const baseSpeed = enemy.type === 'wolf' ? 2 : 1.5;
+        const speedMultiplier = 1 + (gameTime / 6000); // Speed increases every 100 seconds
+        enemy.speed = baseSpeed * speedMultiplier;
+        
+        // Determine if enemy should chase or flee
+        const dx = player.x - enemy.x;
+        const dy = player.y - enemy.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < 150 && player.hasSpeedBoost) {
+          enemy.state = 'fleeing';
+          enemy.direction = Math.atan2(dy, dx) + Math.PI;
+        } else if (distance < 300) {
+          enemy.state = 'chasing';
+          enemy.direction = Math.atan2(dy, dx);
+        }
+        
+        // Move enemy
+        const newX = enemy.x + Math.cos(enemy.direction) * enemy.speed;
+        const newY = enemy.y + Math.sin(enemy.direction) * enemy.speed;
+        
+        // Check collisions
+        let canMove = true;
+        
+        // Check tree collisions
+        for (const tree of trees) {
+          if (collision(
+            newX, newY, enemy.size, enemy.size,
+            tree.x, tree.y, tree.width, tree.height
+          )) {
+            canMove = false;
+            enemy.direction += Math.PI + (Math.random() - 0.5) * Math.PI / 2;
+            break;
+          }
+        }
+        
+        // Check pond collisions
+        if (canMove) {
+          const corners = [
+            { x: newX, y: newY },
+            { x: newX + enemy.size, y: newY },
+            { x: newX, y: newY + enemy.size },
+            { x: newX + enemy.size, y: newY + enemy.size }
+          ];
+          
+          for (const corner of corners) {
+            if (isInPond(corner.x, corner.y)) {
+              canMove = false;
+              enemy.direction += Math.PI + (Math.random() - 0.5) * Math.PI / 2;
+              break;
+            }
+          }
+        }
+        
+        // Keep within map bounds
+        if (newX < 0 || newX > mapWidth - enemy.size) {
+          enemy.direction = Math.PI - enemy.direction;
+          canMove = false;
+        }
+        if (newY < 0 || newY > mapHeight - enemy.size) {
+          enemy.direction = -enemy.direction;
+          canMove = false;
+        }
+        
+        if (canMove) {
+          enemy.x = newX;
+          enemy.y = newY;
+        }
+        
+        // Check for collision with player
+        if (player.invulnerabilityTimer <= 0 && collision(
+          player.x, player.y, player.size, player.size,
+          enemy.x, enemy.y, enemy.size, enemy.size
+        )) {
+          if (player.hasSpeedBoost) {
+            // Create particle effect for eating enemy
+            for (let j = 0; j < 20; j++) {
+              particles.push({
+                x: enemy.x - cameraX + Math.random() * enemy.size,
+                y: enemy.y - cameraY + Math.random() * enemy.size,
+                size: 2 + Math.random() * 3,
+                speedY: -1 - Math.random() * 3,
+                life: 60 + Math.random() * 60
+              });
+            }
+            
+            // Remove enemy and extend speed boost
+            enemies = enemies.filter(e => e !== enemy);
+            player.speedBoostTimer += 300; // Add 5 seconds to speed boost
+          } else {
+            // Take damage
+            energy -= 20;
+            player.invulnerabilityTimer = 60; // 1 second of invulnerability
+            player.isFlickering = true;
+            
+            // Create damage particles
+            for (let j = 0; j < 10; j++) {
+              particles.push({
+                x: player.x - cameraX + Math.random() * player.size,
+                y: player.y - cameraY + Math.random() * player.size,
+                size: 2 + Math.random() * 3,
+                speedY: -1 - Math.random() * 3,
+                life: 30 + Math.random() * 30
+              });
+            }
+            
+            if (energy <= 0) {
+              gameOver();
+            }
+          }
         }
       });
     }
