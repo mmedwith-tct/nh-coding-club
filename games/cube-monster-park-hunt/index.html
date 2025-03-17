@@ -151,13 +151,41 @@
     // Create ponds
     function initPonds() {
       ponds = [];
+      const minPondDistance = 200; // Minimum distance between ponds
+      
       for (let i = 0; i < 5; i++) {
-        ponds.push({
-          x: Math.random() * mapWidth,
-          y: Math.random() * mapHeight,
-          width: 100 + Math.random() * 100,
-          height: 100 + Math.random() * 100
-        });
+        let validPosition = false;
+        let attempts = 0;
+        const maxAttempts = 50;
+        let newPond;
+        
+        while (!validPosition && attempts < maxAttempts) {
+          attempts++;
+          newPond = {
+            x: Math.random() * (mapWidth - 200),
+            y: Math.random() * (mapHeight - 200),
+            width: 100 + Math.random() * 100,
+            height: 100 + Math.random() * 100
+          };
+          
+          validPosition = true;
+          
+          // Check distance from other ponds
+          for (const pond of ponds) {
+            const dx = newPond.x - pond.x;
+            const dy = newPond.y - pond.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < minPondDistance) {
+              validPosition = false;
+              break;
+            }
+          }
+        }
+        
+        if (validPosition) {
+          ponds.push(newPond);
+        }
       }
     }
     
@@ -180,13 +208,63 @@
     // Create trees
     function initTrees() {
       trees = [];
+      const minTreeDistance = 50; // Minimum distance between trees
+      
       for (let i = 0; i < 15; i++) {
-        trees.push({
-          x: Math.random() * mapWidth,
-          y: Math.random() * mapHeight,
-          width: 48 + Math.random() * 16,
-          height: 48 + Math.random() * 16
-        });
+        let validPosition = false;
+        let attempts = 0;
+        const maxAttempts = 50;
+        let newTree;
+        
+        while (!validPosition && attempts < maxAttempts) {
+          attempts++;
+          newTree = {
+            x: Math.random() * (mapWidth - 64),
+            y: Math.random() * (mapHeight - 64),
+            width: 48 + Math.random() * 16,
+            height: 48 + Math.random() * 16
+          };
+          
+          validPosition = true;
+          
+          // Check if tree overlaps with any pond
+          for (const pond of ponds) {
+            if (collision(
+              newTree.x, newTree.y, newTree.width, newTree.height,
+              pond.x, pond.y, pond.width, pond.height
+            )) {
+              validPosition = false;
+              break;
+            }
+            
+            // Also check for minimum distance from pond edges
+            const margin = 32;
+            if (newTree.x < pond.x + pond.width + margin &&
+                newTree.x + newTree.width > pond.x - margin &&
+                newTree.y < pond.y + pond.height + margin &&
+                newTree.y + newTree.height > pond.y - margin) {
+              validPosition = false;
+              break;
+            }
+          }
+          
+          // Check distance from other trees
+          if (validPosition) {
+            for (const tree of trees) {
+              if (collision(
+                newTree.x, newTree.y, newTree.width, newTree.height,
+                tree.x, tree.y, tree.width, tree.height
+              )) {
+                validPosition = false;
+                break;
+              }
+            }
+          }
+        }
+        
+        if (validPosition) {
+          trees.push(newTree);
+        }
       }
     }
     
@@ -1275,9 +1353,11 @@
         
         if (distance < 150 && player.hasSpeedBoost) {
           enemy.state = 'fleeing';
+          // When fleeing, face away from player
           enemy.direction = Math.atan2(dy, dx) + Math.PI;
         } else if (distance < 300) {
           enemy.state = 'chasing';
+          // When chasing, face towards player
           enemy.direction = Math.atan2(dy, dx);
         }
         
@@ -1295,6 +1375,7 @@
             tree.x, tree.y, tree.width, tree.height
           )) {
             canMove = false;
+            // When hitting a tree, turn around and add some randomness
             enemy.direction += Math.PI + (Math.random() - 0.5) * Math.PI / 2;
             break;
           }
@@ -1312,6 +1393,7 @@
           for (const corner of corners) {
             if (isInPond(corner.x, corner.y)) {
               canMove = false;
+              // When hitting a pond, turn around and add some randomness
               enemy.direction += Math.PI + (Math.random() - 0.5) * Math.PI / 2;
               break;
             }
