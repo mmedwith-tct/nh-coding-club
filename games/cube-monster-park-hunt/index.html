@@ -111,7 +111,7 @@
       <p>VICTIMS CONSUMED: <span id="finalScore">0</span></p>
       <button class="restart" onclick="restartGame()">HUNT AGAIN</button>
     </div>
-    <div class="version">v1.0.4</div>
+    <div class="version">v1.0.5</div>
   </div>
   
   <script src="levels.js"></script>
@@ -611,6 +611,45 @@
             
             ctx.restore();
           }
+        } else if (currentLevel === 'arctic') {
+          // Draw snow-covered pine tree
+          // Tree trunk
+          ctx.fillStyle = '#4A4A4A';
+          ctx.fillRect(
+            tree.x - cameraX + tree.width / 3, 
+            tree.y - cameraY + tree.height / 2, 
+            tree.width / 3, 
+            tree.height / 2
+          );
+          
+          // Snow-covered foliage (pixelated style)
+          const pixelSize = 4;
+          ctx.fillStyle = '#FFFFFF';
+          
+          for (let y = 0; y < tree.height / 2; y += pixelSize) {
+            for (let x = 0; x < tree.width; x += pixelSize) {
+              // Create a triangular shape for the pine tree
+              const centerX = tree.width / 2;
+              const centerY = tree.height / 4;
+              const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+              
+              if (distance < tree.width / 2.5) {
+                // Skip some pixels for texture
+                if (Math.random() > 0.9) continue;
+                
+                // Vary colors slightly for texture
+                const colorVariation = Math.floor(Math.random() * 30) - 15;
+                ctx.fillStyle = `rgb(${255 + colorVariation}, ${255 + colorVariation}, ${255 + colorVariation})`;
+                
+                ctx.fillRect(
+                  tree.x - cameraX + x, 
+                  tree.y - cameraY + y, 
+                  pixelSize, 
+                  pixelSize
+                );
+              }
+            }
+          }
         } else {
           // Regular tree
           // Tree trunk
@@ -739,6 +778,88 @@
             ctx.fillStyle = '#ff0000';
             ctx.beginPath();
             ctx.arc(-size/2 - size/4, -size/3, size/6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+          }
+        } else if (currentLevel === 'arctic') {
+          if (enemy.type === 'polar_bear') {
+            // Draw polar bear
+            ctx.save();
+            ctx.translate(x + size/2, y + size/2);
+            ctx.rotate(enemy.direction);
+            
+            // Body
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(-size/2, -size/3, size, size/2);
+            
+            // Head
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(size/2, -size/3, size/3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ears
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(size/2 + size/4, -size/2, size/6, 0, Math.PI * 2);
+            ctx.arc(size/2 + size/4, -size/3, size/6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(size/2 + size/4, -size/3, 2, 0, Math.PI * 2);
+            ctx.arc(size/2 + size/4, -size/4, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Nose
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(size/2 + size/3, -size/3, size/6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Tail
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(-size/2, -size/3, size/4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+          } else {
+            // Draw arctic wolf
+            ctx.save();
+            ctx.translate(x + size/2, y + size/2);
+            ctx.rotate(enemy.direction);
+            
+            // Body
+            ctx.fillStyle = '#E6F3FF';
+            ctx.fillRect(-size/2, -size/3, size, size/2);
+            
+            // Head
+            ctx.fillStyle = '#E6F3FF';
+            ctx.beginPath();
+            ctx.arc(size/2, -size/3, size/3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ears
+            ctx.fillStyle = '#E6F3FF';
+            ctx.beginPath();
+            ctx.arc(size/2 + size/4, -size/2, size/6, 0, Math.PI * 2);
+            ctx.arc(size/2 + size/4, -size/3, size/6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(size/2 + size/4, -size/3, 2, 0, Math.PI * 2);
+            ctx.arc(size/2 + size/4, -size/4, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Tail
+            ctx.fillStyle = '#E6F3FF';
+            ctx.beginPath();
+            ctx.arc(-size/2, -size/3, size/4, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.restore();
@@ -880,6 +1001,58 @@
             ctx.fillStyle = '#D2691E';
             ctx.fillRect(x, y, size, size);
           }
+        } else if (currentLevel === 'arctic') {
+          // Draw frozen pond
+          ctx.fillStyle = '#A5D8FF';
+          ctx.fillRect(
+            pond.x - cameraX,
+            pond.y - cameraY,
+            pond.width,
+            pond.height
+          );
+          
+          // Draw ice cracks
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 2;
+          for (let i = 0; i < 5; i++) {
+            ctx.beginPath();
+            ctx.moveTo(
+              pond.x - cameraX + Math.random() * pond.width,
+              pond.y - cameraY + Math.random() * pond.height
+            );
+            ctx.lineTo(
+              pond.x - cameraX + Math.random() * pond.width,
+              pond.y - cameraY + Math.random() * pond.height
+            );
+            ctx.stroke();
+          }
+          
+          // Draw snow around pond
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(
+            pond.x - cameraX - 4,
+            pond.y - cameraY - 4,
+            pond.width + 8,
+            4
+          );
+          ctx.fillRect(
+            pond.x - cameraX - 4,
+            pond.y - cameraY - 4,
+            4,
+            pond.height + 8
+          );
+          ctx.fillRect(
+            pond.x - cameraX + pond.width,
+            pond.y - cameraY - 4,
+            4,
+            pond.height + 8
+          );
+          ctx.fillRect(
+            pond.x - cameraX - 4,
+            pond.y - cameraY + pond.height,
+            pond.width + 8,
+            4
+          );
         } else {
           // Draw regular pond
           ctx.fillStyle = '#0066cc';
@@ -970,6 +1143,36 @@
           ctx.beginPath();
           ctx.arc(alienX + fish.size/2, alienY + fish.size/4, fish.size/4, 0, Math.PI * 2);
           ctx.fill();
+        } else if (currentLevel === 'arctic') {
+          // Draw penguin
+          const penguinX = fish.x - cameraX;
+          const penguinY = fish.y - cameraY;
+          
+          // Penguin body
+          ctx.fillStyle = '#000000';
+          ctx.beginPath();
+          ctx.arc(penguinX + fish.size/2, penguinY + fish.size/2, fish.size/2, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Penguin belly
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(penguinX + fish.size/2, penguinY + fish.size/2, fish.size/3, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Penguin eyes
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(penguinX + fish.size/3, penguinY + fish.size/3, fish.size/6, 0, Math.PI * 2);
+          ctx.arc(penguinX + 2*fish.size/3, penguinY + fish.size/3, fish.size/6, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Penguin pupils
+          ctx.fillStyle = '#000000';
+          ctx.beginPath();
+          ctx.arc(penguinX + fish.size/3, penguinY + fish.size/3, fish.size/12, 0, Math.PI * 2);
+          ctx.arc(penguinX + 2*fish.size/3, penguinY + fish.size/3, fish.size/12, 0, Math.PI * 2);
+          ctx.fill();
         } else {
           // Draw regular fish
           ctx.fillStyle = '#ff9900';
@@ -1022,12 +1225,21 @@
               ctx.fillStyle = noise > 0.7 ? '#E6B17A' : '#A0522D';
               ctx.fillRect(grainX, grainY, grainSize, grainSize);
             }
-          } else if (currentLevel === 'forest') {
-            // Forest grass pattern
+          } else if (currentLevel === 'arctic') {
+            // Arctic snow pattern
             if ((Math.floor(x / gridSize) + Math.floor(y / gridSize)) % 2 === 0) {
-              ctx.fillStyle = '#006400';
+              ctx.fillStyle = '#E6F3FF';
             } else {
-              ctx.fillStyle = '#008000';
+              ctx.fillStyle = '#F0F8FF';
+            }
+            
+            // Add snow texture
+            for (let i = 0; i < 3; i++) {
+              const snowX = screenX + Math.random() * gridSize;
+              const snowY = screenY + Math.random() * gridSize;
+              const snowSize = 1 + Math.random() * 2;
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(snowX, snowY, snowSize, snowSize);
             }
           } else {
             // Park grass pattern
