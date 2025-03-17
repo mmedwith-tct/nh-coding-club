@@ -574,29 +574,41 @@
         
         if (currentLevel === 'desert') {
           // Draw palm tree
-          // Trunk
+          // Trunk (curved)
           ctx.fillStyle = '#8B4513';
-          ctx.fillRect(
-            tree.x - cameraX + tree.width / 3, 
-            tree.y - cameraY + tree.height / 2, 
-            tree.width / 3, 
-            tree.height / 2
+          ctx.beginPath();
+          ctx.moveTo(tree.x - cameraX + tree.width / 3, tree.y - cameraY + tree.height);
+          ctx.quadraticCurveTo(
+            tree.x - cameraX + tree.width / 2,
+            tree.y - cameraY + tree.height / 2,
+            tree.x - cameraX + tree.width / 3,
+            tree.y - cameraY + tree.height / 3
           );
+          ctx.lineTo(tree.x - cameraX + tree.width / 2, tree.y - cameraY + tree.height / 3);
+          ctx.lineTo(tree.x - cameraX + tree.width / 3, tree.y - cameraY + tree.height);
+          ctx.fill();
           
-          // Palm leaves
+          // Palm leaves (more detailed)
           ctx.fillStyle = '#228B22';
-          for (let i = 0; i < 4; i++) {
-            const angle = (i * Math.PI / 2) + Math.PI / 4;
+          for (let i = 0; i < 6; i++) {
+            const angle = (i * Math.PI / 3) + Math.PI / 6;
             const leafWidth = tree.width * 0.8;
-            const leafHeight = tree.height * 0.4;
+            const leafHeight = tree.height * 0.3;
             
             ctx.save();
             ctx.translate(
               tree.x - cameraX + tree.width / 2,
-              tree.y - cameraY + tree.height / 2
+              tree.y - cameraY + tree.height / 3
             );
             ctx.rotate(angle);
-            ctx.fillRect(-leafWidth / 2, -leafHeight / 2, leafWidth, leafHeight);
+            
+            // Draw leaf with segments
+            for (let j = 0; j < 3; j++) {
+              const segmentWidth = leafWidth / 3;
+              const segmentHeight = leafHeight * (1 - j * 0.2);
+              ctx.fillRect(-segmentWidth / 2, -segmentHeight / 2, segmentWidth, segmentHeight);
+            }
+            
             ctx.restore();
           }
         } else {
@@ -836,41 +848,38 @@
         
         // Different pond appearances based on level
         if (currentLevel === 'desert') {
-          // Draw oasis
-          ctx.fillStyle = '#4169E1';
-          ctx.fillRect(
-            pond.x - cameraX,
-            pond.y - cameraY,
-            pond.width,
-            pond.height
-          );
+          // Draw pyramid
+          const pyramidSize = pond.width;
+          const pyramidHeight = pyramidSize * 0.8;
+          const baseX = pond.x - cameraX;
+          const baseY = pond.y - cameraY;
           
-          // Draw oasis edge
+          // Draw pyramid base
           ctx.fillStyle = '#8B4513';
-          ctx.fillRect(
-            pond.x - cameraX,
-            pond.y - cameraY,
-            pond.width,
-            4
-          );
-          ctx.fillRect(
-            pond.x - cameraX,
-            pond.y - cameraY,
-            4,
-            pond.height
-          );
-          ctx.fillRect(
-            pond.x - cameraX + pond.width - 4,
-            pond.y - cameraY,
-            4,
-            pond.height
-          );
-          ctx.fillRect(
-            pond.x - cameraX,
-            pond.y - cameraY + pond.height - 4,
-            pond.width,
-            4
-          );
+          ctx.beginPath();
+          ctx.moveTo(baseX + pyramidSize/2, baseY);
+          ctx.lineTo(baseX + pyramidSize, baseY + pyramidHeight);
+          ctx.lineTo(baseX, baseY + pyramidHeight);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Draw pyramid sides with different shades
+          ctx.fillStyle = '#A0522D';
+          ctx.beginPath();
+          ctx.moveTo(baseX + pyramidSize/2, baseY);
+          ctx.lineTo(baseX + pyramidSize, baseY + pyramidHeight);
+          ctx.lineTo(baseX + pyramidSize/2, baseY + pyramidHeight);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Add pyramid texture
+          for (let i = 0; i < 10; i++) {
+            const x = baseX + Math.random() * pyramidSize;
+            const y = baseY + Math.random() * pyramidHeight;
+            const size = 2 + Math.random() * 3;
+            ctx.fillStyle = '#D2691E';
+            ctx.fillRect(x, y, size, size);
+          }
         } else {
           // Draw regular pond
           ctx.fillStyle = '#0066cc';
@@ -910,7 +919,7 @@
         }
       });
       
-      // Draw fish
+      // Draw fish/aliens
       fish.forEach(fish => {
         // Check if fish is visible on screen
         if (
@@ -922,7 +931,7 @@
           return;
         }
         
-        // Draw fish shadow
+        // Draw fish/alien shadow
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.fillRect(
           fish.x - cameraX + 2,
@@ -931,23 +940,55 @@
           fish.size
         );
         
-        // Draw fish body
-        ctx.fillStyle = currentLevel === 'desert' ? '#FFD700' : '#ff9900';
-        ctx.fillRect(
-          fish.x - cameraX,
-          fish.y - cameraY,
-          fish.size,
-          fish.size
-        );
-        
-        // Draw fish tail
-        ctx.fillStyle = currentLevel === 'desert' ? '#DAA520' : '#ff6600';
-        ctx.fillRect(
-          fish.x - cameraX + fish.size - 4,
-          fish.y - cameraY + 4,
-          8,
-          8
-        );
+        if (currentLevel === 'desert') {
+          // Draw alien
+          const alienX = fish.x - cameraX;
+          const alienY = fish.y - cameraY;
+          
+          // Alien body
+          ctx.fillStyle = '#00ff00';
+          ctx.beginPath();
+          ctx.arc(alienX + fish.size/2, alienY + fish.size/2, fish.size/2, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Alien eyes
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(alienX + fish.size/3, alienY + fish.size/3, fish.size/6, 0, Math.PI * 2);
+          ctx.arc(alienX + 2*fish.size/3, alienY + fish.size/3, fish.size/6, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Alien pupils
+          ctx.fillStyle = '#000000';
+          ctx.beginPath();
+          ctx.arc(alienX + fish.size/3, alienY + fish.size/3, fish.size/12, 0, Math.PI * 2);
+          ctx.arc(alienX + 2*fish.size/3, alienY + fish.size/3, fish.size/12, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Alien antenna
+          ctx.fillStyle = '#00ff00';
+          ctx.beginPath();
+          ctx.arc(alienX + fish.size/2, alienY + fish.size/4, fish.size/4, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Draw regular fish
+          ctx.fillStyle = '#ff9900';
+          ctx.fillRect(
+            fish.x - cameraX,
+            fish.y - cameraY,
+            fish.size,
+            fish.size
+          );
+          
+          // Draw fish tail
+          ctx.fillStyle = '#ff6600';
+          ctx.fillRect(
+            fish.x - cameraX + fish.size - 4,
+            fish.y - cameraY + 4,
+            8,
+            8
+          );
+        }
       });
     }
     
@@ -963,11 +1004,23 @@
           
           // Different background patterns based on level
           if (currentLevel === 'desert') {
-            // Desert sand pattern
-            if ((Math.floor(x / gridSize) + Math.floor(y / gridSize)) % 2 === 0) {
-              ctx.fillStyle = '#8B4513';
+            // Desert sand pattern with dunes
+            const noise = Math.sin(x / 100) * Math.cos(y / 100) * 0.5 + 0.5;
+            if (noise > 0.7) {
+              ctx.fillStyle = '#D2691E'; // Light sand
+            } else if (noise > 0.4) {
+              ctx.fillStyle = '#CD853F'; // Medium sand
             } else {
-              ctx.fillStyle = '#A0522D';
+              ctx.fillStyle = '#8B4513'; // Dark sand
+            }
+            
+            // Add sand texture
+            for (let i = 0; i < 3; i++) {
+              const grainX = screenX + Math.random() * gridSize;
+              const grainY = screenY + Math.random() * gridSize;
+              const grainSize = 1 + Math.random() * 2;
+              ctx.fillStyle = noise > 0.7 ? '#E6B17A' : '#A0522D';
+              ctx.fillRect(grainX, grainY, grainSize, grainSize);
             }
           } else if (currentLevel === 'forest') {
             // Forest grass pattern
@@ -986,31 +1039,6 @@
           }
           
           ctx.fillRect(screenX, screenY, gridSize, gridSize);
-          
-          // Add texture based on level
-          if (currentLevel === 'desert') {
-            // Desert sand texture
-            if (Math.random() > 0.7) {
-              ctx.fillStyle = '#D2691E';
-              ctx.fillRect(
-                screenX + Math.random() * gridSize, 
-                screenY + Math.random() * gridSize, 
-                2, 
-                2
-              );
-            }
-          } else {
-            // Grass texture
-            if (Math.random() > 0.7) {
-              ctx.fillStyle = currentLevel === 'forest' ? '#001100' : '#002200';
-              ctx.fillRect(
-                screenX + Math.random() * gridSize, 
-                screenY + Math.random() * gridSize, 
-                2, 
-                2
-              );
-            }
-          }
         }
       }
       
