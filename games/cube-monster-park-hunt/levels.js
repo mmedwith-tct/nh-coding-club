@@ -22,8 +22,8 @@ const levels = {
         victimCount: 5,
         requiredVictims: 5,
         enemyTypes: [
-            { type: 'wolf', count: 3, size: 32, speed: 2.5 },
-            { type: 'raccoon', count: 2, size: 24, speed: 2 }
+            { type: 'coyote', count: 3, size: 32, speed: 2.5 },
+            { type: 'scorpion', count: 2, size: 24, speed: 2 }
         ]
     },
     forest: {
